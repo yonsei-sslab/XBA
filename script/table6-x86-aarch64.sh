@@ -6,9 +6,9 @@ program="libcrypto-xarch"
 epochs=10000
 python train.py --k 50 --layer 5 --target $program --embedding_type bow --seed 5 --epochs $epochs
 python train.py --k 50 --layer 5 --target $program --embedding_type deepbindiff --seed 5 --epochs $epochs
-<<comment
+
 program="libc"
-epochs=10000
+epochs=15000
 python train.py --k 100 --layer 5 --target $program --embedding_type bow --seed 5 --epochs $epochs
 python train.py --k 100 --layer 5 --target $program --embedding_type deepbindiff --seed 5 --epochs $epochs
-comment
+

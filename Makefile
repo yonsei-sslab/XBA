@@ -10,41 +10,15 @@ ARM_PROGRAM_LIST = libc libcrypto-xarch
 ARM_PROPORTION_LIST = 5
 ARM_EMBEDDING_LIST = bow deepbindiff
 
-train-general-model:
-	./train-general.sh
+table8:
+	./script/table8.sh
 
-gcn-result-x86-windows:
-	for i in $(WINDOWS_PROGRAM_LIST); \
-	do \
-		IFS=',' read program k epochs <<< "${i}" \
-		for proportion in $(WINDOWS_PROPORTION_LIST); \
-		do \
-			for embedding in $(WINDOWS_EMBEDDING_LIST); \
-			do \
-				python train.py --ae_dim 200 --layer 5 --target $$program --embedding_type $$embedding --seed $$proportion --k $$k --epochs $$epochs; \
-			done \
-		done \
-	done
-
-gcn-result-x86-aarch64:
-	for program in $(ARM_PROGRAM_LIST); \
-	do \
-		for proportion in $(ARM_PROPORTION_LIST); \
-		do \
-			for embedding in $(ARM_EMBEDDING_LIST); \
-			do \
-				python train.py --ae_dim 200 --layer 5 --epochs 25000 --target $$program --embedding_type $$embedding --seed $$proportion; \
-			done \
-		done \
-	done
-
-
-baseline-result:
-	for program in $(BASELINE_PROGRAM_LIST); do \
-		for embedding in $(BASELINE_EMBEDDING_LIST); do\
-			python baseline.py --target $$program --embedding_type $$embedding; \
-		done \
-	done
+table6:
+	./script/table6-baseline-bow.sh
+	./script/table6-baseline-dbd.sh
+	./script/table6-baseline-innereye.sh
+	./script/table6-x86-windows.sh
+	./script/table6-x86-aarch64.sh
 
 ranking-AE:
 	python get_rank.py --ae_dim 200 --beta 0 --target libcrypto-xarch --embedding_type bow --bb_id1="93448, 93448, 93449, 93449" --bb_id2="197104, 197105, 197104, 197105" --layer 5

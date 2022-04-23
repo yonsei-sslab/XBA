@@ -1,7 +1,6 @@
 import logging
 import numpy as np
 import scipy.sparse as sp
-import tensorflow as tf
 import git
 import json
 import torch
@@ -9,32 +8,88 @@ import csv
 import metrics
 import pandas as pd
 
-flags = tf.compat.v1.app.flags
-FLAGS = flags.FLAGS
+import os
 
 
-def print_and_save_results(test_data, vec_ae):
-    print(
-        f"TEST: GCN-{FLAGS.target}-{FLAGS.embedding_type}-seed{FLAGS.seed}0-epoch{FLAGS.epochs}-D{FLAGS.ae_dim}"
+def plot_history(
+    epoch_history,
+    loss_history,
+    test_history,
+    dir_path: str = "history",
+    fig_name: str = "loss_history",
+):
+    import matplotlib.pyplot as plt
+
+    plt.style.use("seaborn")  # pretty matplotlib plots
+
+    fig, ax1 = plt.subplots()
+
+    ax1.set_xlabel("epochs")
+    ax1.set_ylabel("loss", color="red")
+    ax1.plot(
+        epoch_history,
+        loss_history,
+        color="red",
+        lw=2,
+        ls="-",
+        alpha=0.5,
+        label="Training Loss",
     )
-    base_dir_path = get_git_root("train.py") + "/result/"
+    ax1.tick_params(axis="y", labelcolor="red")
 
-    print("<Attribute embeddings>")
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    ax2.set_ylabel(
+        "hits score", color="blue"
+    )  # we already handled the x-label with ax1
+    ax2.plot(
+        epoch_history,
+        test_history,
+        color="blue",
+        lw=2,
+        ls="-",
+        alpha=0.5,
+        label="Hits score",
+    )
+    ax2.tick_params(axis="y", labelcolor="blue")
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+
+    plt.savefig(os.path.join(dir_path, fig_name + ".png"))
+
+    import json
+
+    history_dict = {
+        "epoch": epoch_history,
+        "loss": [str(x) for x in loss_history],
+        "hits": [str(x) for x in test_history],
+    }
+    with open(
+        os.path.join(dir_path, fig_name + ".json"),
+        "w",
+    ) as fp:
+        json.dump(history_dict, fp)
+
+
+def print_and_save_results(
+    test_data, vec_ae, model_name: str, result_dir: str, record: bool, seed: int
+):
+    logging.info(model_name)
+    logging.info("<Attribute embeddings>")
+
     result = metrics.get_hits(vec_ae, test_data)
-    file_name = (
-        base_dir_path
-        + f"GCN-layer{FLAGS.layer}-{FLAGS.target}-{FLAGS.embedding_type}-seed{FLAGS.seed}0-epoch{FLAGS.epochs}-D{FLAGS.ae_dim}-gamma{FLAGS.gamma}-k{FLAGS.k}-dropout{FLAGS.dropout}-LR{FLAGS.learning_rate}-AE.csv"
-    )
-    with open(file_name, "w") as csvfile:
-        # creating a csv writer object
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(["Proportion", "Hits", "AB", "BA"])
-        # writing the data rows
-        result = [[FLAGS.seed * 10] + x for x in result]
-        csvwriter.writerows(result)
+    if record:
+        file_name = os.path.join(result_dir + model_name + ".csv")
+        with open(file_name, "w") as csvfile:
+            # creating a csv writer object
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(["Proportion", "Hits", "AB", "BA"])
+            # writing the data rows
+            result = [[seed * 10] + x for x in result]
+            csvwriter.writerows(result)
 
 
-def random_corruption(alignments: np.ndarray, num_of_neg_samples: int) -> list:
+def random_corruption(alignments: np.ndarray, num_of_neg_samples: int) -> tuple:
     left_right = []
     right_left = []
     for i, _ in enumerate(alignments):
@@ -232,7 +287,7 @@ def get_weighted_adj(num_of_entities, relation_set):
     return sp.coo_matrix((data, (row, col)), shape=(num_of_entities, num_of_entities))
 
 
-def load_data(target: str, embe_type: str):
+def load_data(target: str, embe_type: str, seed: int, test_program=None):
     data_root_dir_path = get_git_root("utils.py") + "/data/done/" + target
     entity_id_path = data_root_dir_path + "/disasm.json"
     if embe_type == "innereye":
@@ -256,20 +311,23 @@ def load_data(target: str, embe_type: str):
         pass
     relation_triples_path_left = data_root_dir_path + "/gcn1-relation.csv"
     relation_triples_path_right = data_root_dir_path + "/gcn2-relation.csv"
-    reference_alignment_path = (
-        data_root_dir_path + "/seed_alignments/" + str(FLAGS.seed)
-    )
+    reference_alignment_path = data_root_dir_path + "/seed_alignments/" + str(seed)
 
     f = open(entity_id_path, "r")
     id2entity = json.load(f)
     num_of_entities = max([int(key) for key in id2entity.keys()]) + 1
 
     # Training and test dataset split
-    if FLAGS.seed == 10:
+    if seed == 10:
         train_relations = train_relations = np.array(
             loadfile(data_root_dir_path + "/alignment.csv", 2)
         )
         test_relations = None
+    elif seed == 0:
+        test_relations = train_relations = np.array(
+            loadfile(data_root_dir_path + "/alignment.csv", 2)
+        )
+        train_relations = None
     else:
         train_relations = np.array(
             loadfile(reference_alignment_path + "/training_alignments.csv", 2)
@@ -285,11 +343,13 @@ def load_data(target: str, embe_type: str):
 
     if embe_type == "bow":
         disasm_path = data_root_dir_path + "/disasm_innereye.json"
-        if FLAGS.seed == 10:
+        if seed == 10:
             vocab_path = f"./vocabulary/{target}_vocabulary_for_new_alignments.json"
         else:
             vocab_path = f"./vocabulary/{target}_vocabulary.json"
-        attribute_mat = load_bow_embeddings(disasm_path, vocab_path)
+        attribute_mat = load_bow_embeddings(
+            disasm_path, vocab_path, target, embe_type, test_program
+        )
         attribute_tuple = sparse_to_tuple(sp.coo_matrix(attribute_mat))
     elif embe_type == "bow-general":
         disasm_path = data_root_dir_path + "/disasm_innereye.json"
@@ -299,12 +359,15 @@ def load_data(target: str, embe_type: str):
             "httpd",
             "sqlite3",
             "libcrypto",
-            "libc",
-            "libcrypto-xarch",
         ]
-        program_list = [e for e in program_list if e != FLAGS.test]
+
+        assert test_program is not None
+
+        program_list = [e for e in program_list if e != test_program]
         vocab_path = f'./vocabulary/{"-".join(program_list)}_vocabulary.json'
-        attribute_mat = load_bow_embeddings(disasm_path, vocab_path)
+        attribute_mat = load_bow_embeddings(
+            disasm_path, vocab_path, target, embe_type, test_program
+        )
         attribute_tuple = sparse_to_tuple(sp.coo_matrix(attribute_mat))
     else:
         attribute_mat = loadattr(embeddings_path, num_of_entities, embe_type)
@@ -321,14 +384,16 @@ def load_data(target: str, embe_type: str):
     )
 
 
-def load_bow_embeddings(disasm_path: str, vocab_path: str) -> tuple:
+def load_bow_embeddings(
+    disasm_path: str, vocab_path: str, target: str, embedding_type: str, test: str
+):
     f = open(disasm_path, "r")
     bb_list = json.load(f)
     f = open(vocab_path, "r")
     vocab = json.load(f)
     num_of_entities = max([int(key) for key in bb_list.keys()]) + 1
 
-    data_root_dir_path = get_git_root("utils.py") + "/data/done/" + FLAGS.target
+    data_root_dir_path = get_git_root("utils.py") + "/data/done/" + target
     seed_path = data_root_dir_path + "/alignment.csv"
     alignments = pd.read_csv(seed_path, header=None)
     alignments = list(alignments[0]) + list(alignments[1])
@@ -350,8 +415,8 @@ def load_bow_embeddings(disasm_path: str, vocab_path: str) -> tuple:
                     logging.info(f"Out of vocabulary: {word}")
                     stat[word] = stat.get(word, 0) + 1
 
-    if FLAGS.embedding_type == "bow-general" and FLAGS.target == FLAGS.test:
-        with open(f"target-{FLAGS.target}-test-{FLAGS.test}-stat.json", "w") as fp:
+    if embedding_type == "bow-general" and target == test:
+        with open(f"target-{target}-test-{test}-stat.json", "w") as fp:
             json.dump(stat, fp)
 
     return sp.coo_matrix((data, (row, col)), shape=(num_of_entities, len(vocab)))

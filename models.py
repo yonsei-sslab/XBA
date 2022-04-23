@@ -3,9 +3,6 @@ from layers import *
 from metrics import *
 from inits import *
 
-flags = tf.compat.v1.app.flags
-FLAGS = flags.FLAGS
-
 
 class Model(object):
     def __init__(self, **kwargs):
@@ -109,7 +106,9 @@ class GCN_Align(Model):
         self.sparse_inputs = sparse_inputs
         self.featureless = featureless
 
-        self.optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
+        self.optimizer = tf.compat.v1.train.AdamOptimizer(
+            learning_rate=FLAGS.learning_rate
+        )
         # self.optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=FLAGS.learning_rate)
 
         self.build()
