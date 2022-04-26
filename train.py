@@ -1,12 +1,4 @@
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
-from utils import *
-from metrics import *
-from models import GCN_Align
-import logging
-import os
 
 from xba import XBA
 
