@@ -3,6 +3,7 @@ import numpy as np
 
 import logging
 import os
+import csv
 
 from utils import (
     load_data,
@@ -14,6 +15,8 @@ from utils import (
 )
 from models import GCN_Align
 import metrics
+
+tf.compat.v1.disable_v2_behavior()
 
 
 class XBA:
@@ -70,12 +73,8 @@ class XBA:
 
         # Preprocessing
         adjacency_matrix_tuple = [preprocess_adj(adjacency_matrix)]
-        # num_of_entities = embeddings_tuple[2][0]
-        # number of adjacency matrix
-        num_supports = 1
 
         return (
-            num_supports,
             adjacency_matrix_tuple,
             embeddings_tuple,
             train_data,
@@ -83,6 +82,7 @@ class XBA:
             embeddings_mat,
         )
 
+    """
     def test(
         self,
         model_dir_path: str = "./saved_model",
@@ -148,50 +148,80 @@ class XBA:
         vec_ae = sess.run(
             model_attribute_embeddings.outputs, feed_dict=feed_dict_attribute_embeddings
         )
-        
+
         print_and_save_results(
             test_data, vec_ae, self.model_file_name, result_dir, self.record, self.seed
         )
+    """
+
+    def exhaustive_comparison(
+        self,
+        sess,
+        adjacency_matrix_tuple,
+        embeddings_mat,
+        placeholders_attribute_embeddings,
+        model_attribute_embeddings,
+        bb_id1,
+        bb_id2,
+        result_dir: str = "./result/",
+    ):
+        # Testing
+        feed_dict_attribute_embeddings = construct_feed_dict(
+            embeddings_mat,
+            adjacency_matrix_tuple,
+            placeholders_attribute_embeddings,
+        )
+        vec_ae = sess.run(
+            model_attribute_embeddings.outputs, feed_dict=feed_dict_attribute_embeddings
+        )
+
+        model_file_name, _ = self.get_model_path(" ")
+
+        logging.info(f"TEST on individual block pairs: {model_file_name}")
+
+        result = metrics.get_pair_rank(vec_ae, bb_id1, bb_id2, False)
+        file_name = os.path.join(
+            result_dir + f"{bb_id1[:5]}-{bb_id2[:5]}" + model_file_name + ".csv"
+        )
+        with open(file_name, "w") as csvfile:
+            # creating a csv writer object
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(["BB ID 1", "BB ID 2", "AB", "BA"])
+            # writing the data rows
+            csvwriter.writerows(result)
+
+    def restore(self, model_dir_path: str = "./saved_model"):
+        # Initialize session
+        sess = tf.Session()
+
+        # create saver object
+        saver = tf.train.Saver()
+
+        # Init variables
+        sess.run(tf.global_variables_initializer())
+
+        model_file_name, saved_weights_path = self.get_model_path(model_dir_path)
+
+        if os.path.isfile(saved_weights_path):
+            # restore the saved vairable
+            saver.restore(sess, saved_weights_path)
+
+        return sess
 
     def train(
         self,
+        adjacency_matrix_tuple,
+        embeddings_tuple,
+        train_data,
+        test_data,
+        embeddings_mat,
+        placeholders_attribute_embeddings,
+        model_attribute_embeddings,
         history_dir_path: str = "./history",
         model_dir_path: str = "./saved_model",
         restore: bool = False,
         validate: bool = True,
     ):
-        (
-            num_supports,
-            adjacency_matrix_tuple,
-            embeddings_tuple,
-            train_data,
-            test_data,
-            embeddings_mat,
-        ) = self.data_load()
-
-        tf.compat.v1.disable_v2_behavior()
-
-        # Define placeholders
-        placeholders_attribute_embeddings = {
-            "support": [tf.sparse_placeholder(tf.float32) for _ in range(num_supports)],
-            "features": tf.placeholder(
-                tf.float32
-            ),  # tf.spaese_placeholder(tf.float32),
-            "dropout": tf.placeholder_with_default(0.0, shape=()),
-            "num_features_nonzero": tf.placeholder_with_default(0, shape=()),
-        }
-
-        # Create model
-        model_attribute_embeddings = GCN_Align(
-            placeholders_attribute_embeddings,
-            input_dim=embeddings_tuple[2][1],
-            output_dim=self.ae_dim,
-            ILL=train_data,
-            sparse_inputs=False,
-            featureless=False,
-            logging=True,
-            num_layer=self.layer,
-        )
 
         # Initialize session
         sess = tf.Session()
@@ -202,14 +232,10 @@ class XBA:
         # Init variables
         sess.run(tf.global_variables_initializer())
 
-        if self.model_file_name is None:
-            model_file_name = f"gcn-{self.layer}layer-{self.target}-{self.embedding_type}-seed{self.seed}0-epoch{self.epochs}-D{self.ae_dim}-gamma{self.gamma}-k{self.k}-dropout{self.dropout}-LR{self.lr}"
-        else:
-            model_file_name = self.model_file_name
-        saved_weights_path = os.path.join(model_dir_path, model_file_name + ".index")
+        model_file_name, saved_weights_path = self.get_model_path(model_dir_path)
 
         if restore:
-            if os.path.isfile(saved_weights_path):
+            if os.path.isfile(saved_weights_path + ".index"):
                 # restore the saved vairable
                 saver.restore(sess, saved_weights_path)
 
@@ -231,7 +257,7 @@ class XBA:
         loss_history = []
         test_history = []
         for epoch in range(self.epochs):
-            if epoch % 10 == 0:
+            if epoch % 100 == 0:
                 (
                     negative_samples_right_left,
                     negative_samples_left_right,
@@ -285,8 +311,8 @@ class XBA:
             sess,
             saved_weights_path,
         )
-        print(f"model saved in {saved_path}")
-        print("Optimization Finished!")
+        logging.info(f"model saved in {saved_path}")
+        logging.info("Optimization Finished!")
 
         if self.record:
             plot_history(
@@ -306,6 +332,40 @@ class XBA:
                 placeholders_attribute_embeddings,
                 model_file_name,
             )
+
+    def build_model(self, embeddings_tuple, train_data):
+        # Define placeholders
+        placeholders_attribute_embeddings = {
+            "support": [tf.sparse_placeholder(tf.float32) for _ in range(1)],
+            "features": tf.placeholder(
+                tf.float32
+            ),  # tf.spaese_placeholder(tf.float32),
+            "dropout": tf.placeholder_with_default(0.0, shape=()),
+            "num_features_nonzero": tf.placeholder_with_default(0, shape=()),
+        }
+
+        # Create model
+        model_attribute_embeddings = GCN_Align(
+            placeholders_attribute_embeddings,
+            input_dim=embeddings_tuple[2][1],
+            output_dim=self.ae_dim,
+            ILL=train_data,
+            sparse_inputs=False,
+            featureless=False,
+            logging=True,
+            num_layer=self.layer,
+        )
+
+        return placeholders_attribute_embeddings, model_attribute_embeddings
+
+    def get_model_path(self, model_dir_path):
+        if self.model_file_name is None:
+            model_file_name = f"gcn-{self.layer}layer-{self.target}-{self.embedding_type}-seed{self.seed}0-epoch{self.epochs}-D{self.ae_dim}-gamma{self.gamma}-k{self.k}-dropout{self.dropout}-LR{self.lr}"
+        else:
+            model_file_name = self.model_file_name
+        saved_weights_path = os.path.join(model_dir_path, model_file_name)
+
+        return model_file_name, saved_weights_path
 
     def validate(
         self,

@@ -1,5 +1,12 @@
 # XBA
 
+
+## Getting Started
+
+## Detailed Description
+
+## data processing
+
 ## How to run
 Prerequisites
 ```shellsciprt
@@ -29,4 +36,9 @@ $ pipenv run -- python get_rank.py --target {target} --embedding_type {embedding
 Split alignments data into training and test data with ratio of 10/20/30/40/50%
 ```shellscript
 $ python split_seed_alignments.py --target libcrypto
+```
+
+## Citation
+```
+
 ```

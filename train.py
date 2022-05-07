@@ -25,11 +25,11 @@ flags.DEFINE_float("gamma", 0.1, "Hyper-parameter for margin based loss.")
 flags.DEFINE_integer("k", 100, "Number of negative samples for each positive seed.")
 flags.DEFINE_float("beta", 0.9, "Weight for structure embeddings.")
 flags.DEFINE_integer("layer", 2, "Number of layers")
-flags.DEFINE_integer("se_dim", 200, "Dimension for SE.")
 flags.DEFINE_integer("ae_dim", 200, "Dimension for AE.")
 flags.DEFINE_integer("seed", 5, "Proportion of seeds, 3 means 30%")
 flags.DEFINE_string("log", "INFO", "Set log level")
 flags.DEFINE_bool("record", True, "Record training history")
+flags.DEFINE_bool("restore", False, "Restore and train")
 
 xba = XBA(
     FLAGS.target,
@@ -46,4 +46,27 @@ xba = XBA(
     FLAGS.record,
 )
 
-xba.train()
+(
+    adjacency_matrix_tuple,
+    embeddings_tuple,
+    train_data,
+    test_data,
+    embeddings_mat,
+) = xba.data_load()
+
+(
+    placeholders,
+    model,
+) = xba.build_model(embeddings_tuple, train_data)
+
+xba.train(
+    adjacency_matrix_tuple,
+    embeddings_tuple,
+    train_data,
+    test_data,
+    embeddings_mat,
+    placeholders,
+    model,
+    validate=False,
+    restore=FLAGS.restore,
+)

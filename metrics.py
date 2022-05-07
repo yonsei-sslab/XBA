@@ -69,19 +69,13 @@ def align_loss(outlayer, ILL, gamma, k):
 
 
 def get_pair_rank(
-    se_vec: list,
     ae_vec: list,
     bb_id1: list,
     bb_id2: list,
-    beta: float,
     equality: bool = True,
 ):
     test_data1, test_data2 = get_test_data()
-
-    if se_vec is None:
-        vec = ae_vec
-    else:
-        vec = np.concatenate([se_vec * beta, ae_vec * (1.0 - beta)], axis=1)
+    vec = ae_vec
 
     Lvec = np.array([vec[l] for l in test_data1])
     Rvec = np.array([vec[r] for r in test_data2])

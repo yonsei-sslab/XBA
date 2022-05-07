@@ -319,15 +319,11 @@ def load_data(target: str, embe_type: str, seed: int, test_program=None):
 
     # Training and test dataset split
     if seed == 10:
-        train_relations = train_relations = np.array(
-            loadfile(data_root_dir_path + "/alignment.csv", 2)
-        )
-        test_relations = None
+        train_relations = np.array(loadfile(data_root_dir_path + "/alignment.csv", 2))
+        test_relations = []
     elif seed == 0:
-        test_relations = train_relations = np.array(
-            loadfile(data_root_dir_path + "/alignment.csv", 2)
-        )
-        train_relations = None
+        test_relations = np.array(loadfile(data_root_dir_path + "/alignment.csv", 2))
+        train_relations = []
     else:
         train_relations = np.array(
             loadfile(reference_alignment_path + "/training_alignments.csv", 2)

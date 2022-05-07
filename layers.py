@@ -115,8 +115,6 @@ class GraphConvolution(Layer):
 
         with tf.compat.v1.variable_scope(self.name + "_vars"):
             for i in range(len(self.support)):
-                # if input_dim == output_dim and not self.transform and not featureless:
-                # continue
                 self.vars["weights_" + str(i)] = init(
                     [input_dim, output_dim], name="weights_" + str(i)
                 )
