@@ -1,15 +1,32 @@
 # XBA
-This repository implements XBA, a deep learning tool for generating platform-agnostic binary code embeddings. XBA takes a semi-supervised approach to learn semantic matching of binary code blocks compiled for different platforms by using graph neural network with siamese architecture. It outperformed prior works
+This repository implements XBA, a deep learning tool for generating platform-agnostic binary code embeddings. XBA applies graph convolutional network on the graph representation of binary to learn 
+
+![overview](./gcnoverview.jpg)
 
 ## Setup
 
 ### Structure
 
     .
-    ├── ...
     ├── README
     ├── Pipfile                 # Manages a Python virtualenv
     ├── Pipfile.lock            # Manages a Python virtualenv (Do not touch)
+    ├── baseline.py             #
+    ├── get_rank.py             #
+    ├── layers.py               #
+    ├── metrics.py              #
+    ├── models.py               #
+    ├── train_general.py        #
+    ├── train.py                #
+    ├── utils.py                # 
+    ├── xba.py                  # 
+    ├── script                  # 
+    ├── result                  # 
+    ├── history                 # 
+    ├── data_processing         # 
+    ├── data                    # 
+    ├── vocabulary              # 
+    ├── saved_model             # 
     ├── test                    # Test files (alternatively `spec` or `tests`)
     │   ├── benchmarks          # Load and stress tests
     │   ├── integration         # End-to-end, integration tests (alternatively `e2e`)
@@ -17,6 +34,34 @@ This repository implements XBA, a deep learning tool for generating platform-agn
     └── ...
 
 ### Install
+#### Use pipenv shell
+
+Prerequisites
+```shellsciprt
+$ pip3 install pipenv
+```
+
+Install dependencies
+```shellscript
+$ pipenv install
+```
+
+Activate pipenv shell
+```shellscript
+$ pipenv shell
+```
+
+#### Use your own Python virtual environment
+
+Extract requirements.txt
+```shellscript
+$ pipenv lock -r > requirements.txt
+```
+
+Install dependencies
+```shellscript
+$ pip install -r requirements.txt
+```
 
 ### Dataset
 
@@ -38,15 +83,7 @@ This repository implements XBA, a deep learning tool for generating platform-agn
 ### data processing
 
 ## How to run
-Prerequisites
-```shellsciprt
-$ pip3 install pipenv
-```
 
-Install dependencies
-```shellscript
-$ pipenv install
-```
 
 Training GCN model on {target} based on {embedding_type} with 10/20/30/40/50% seed alignments and store models in `saved_model`. Results will be stored in `result` directory in root directory.
 ```shellscript
