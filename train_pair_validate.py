@@ -19,16 +19,20 @@ flags.DEFINE_string(
 )  # "innereye", "deepbindiff", "bow"
 
 flags.DEFINE_float("learning_rate", 0.001, "Initial learning rate.")
-flags.DEFINE_integer("epochs", 10000, "Number of epochs to train.")
+flags.DEFINE_integer("epochs", 500, "Number of epochs to train.")
 flags.DEFINE_float("dropout", 0, "Dropout rate (1 - keep probability).")
 flags.DEFINE_float("gamma", 3, "Hyper-parameter for margin based loss.")
-flags.DEFINE_integer("k", 100, "Number of negative samples for each positive seed.")
-flags.DEFINE_integer("layer", 2, "Number of layers")
+flags.DEFINE_integer("k", 25, "Number of negative samples for each positive seed.")
+flags.DEFINE_integer("layer", 5, "Number of layers")
 flags.DEFINE_integer("ae_dim", 200, "Dimension for AE.")
-flags.DEFINE_integer("seed", 5, "Proportion of seeds, 3 means 30%")
+flags.DEFINE_integer("seed", 10, "Proportion of seeds, 3 means 30%")
 flags.DEFINE_string("log", "INFO", "Set log level")
 flags.DEFINE_bool("record", True, "Record training history")
 flags.DEFINE_bool("restore", False, "Restore and train")
+flags.DEFINE_list("bb_id1", [15, 210, 267, 21, 51], "BB ID 1")
+flags.DEFINE_list("bb_id2", [163444, 163449, 162301, 166462, 166464], "BB ID 2")
+FLAGS.bb_id1 = [int(x) for x in FLAGS.bb_id1]
+FLAGS.bb_id2 = [int(x) for x in FLAGS.bb_id2]
 
 xba = XBA(
     FLAGS.target,
@@ -58,7 +62,7 @@ xba = XBA(
     model,
 ) = xba.build_model(embeddings_tuple, train_data)
 
-xba.train(
+xba.train_pair_validate(
     adjacency_matrix_tuple,
     embeddings_tuple,
     train_data,
@@ -66,6 +70,7 @@ xba.train(
     embeddings_mat,
     placeholders,
     model,
-    validate=False,
+    FLAGS.bb_id1,
+    FLAGS.bb_id2,
     restore=FLAGS.restore,
 )

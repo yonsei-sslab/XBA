@@ -165,6 +165,10 @@ class XBA:
         bb_id2,
         result_dir: str = "./result/",
     ):
+        import itertools
+
+        bb_id1 = [x for x, _ in itertools.product(bb_id1, bb_id2)]
+        bb_id2 = [x for _, x in itertools.product(bb_id1, bb_id2)]
         # Testing
         feed_dict_attribute_embeddings = construct_feed_dict(
             embeddings_mat,
@@ -332,6 +336,134 @@ class XBA:
                 placeholders_attribute_embeddings,
                 model_file_name,
             )
+
+    def train_pair_validate(
+        self,
+        adjacency_matrix_tuple,
+        embeddings_tuple,
+        train_data,
+        test_data,
+        embeddings_mat,
+        placeholders_attribute_embeddings,
+        model_attribute_embeddings,
+        bb_id1,
+        bb_id2,
+        history_dir_path: str = "./history",
+        model_dir_path: str = "./saved_model",
+        restore: bool = False,
+        validate: bool = True,
+    ):
+
+        # Initialize session
+        sess = tf.Session()
+
+        # create saver object
+        saver = tf.train.Saver()
+
+        # Init variables
+        sess.run(tf.global_variables_initializer())
+
+        model_file_name, saved_weights_path = self.get_model_path(model_dir_path)
+
+        if restore:
+            if os.path.isfile(saved_weights_path + ".index"):
+                # restore the saved vairable
+                saver.restore(sess, saved_weights_path)
+
+        # Generate negative samples
+        train_data_len = len(train_data)
+        L = np.ones((train_data_len, self.k)) * (
+            train_data[:, 0].reshape((train_data_len, 1))
+        )
+        # [left_block_id_1, left_block_id_1, left_block_id_1, ..., left_block_id_100, left_block_id_100, left_block_id_100, left_block_id_100, ...]
+        negative_samples_left_left = L.reshape((train_data_len * self.k,))
+        L = np.ones((train_data_len, self.k)) * (
+            train_data[:, 1].reshape((train_data_len, 1))
+        )
+        # [right_block_id_1, right_block_id_1, right_block_id_1, ..., right_block_id_100, right_block_id_100, right_block_id_100, right_block_id_100, ...]
+        negative_samples_right_right = L.reshape((train_data_len * self.k,))
+
+        # Train model
+        epoch_history = []
+        loss_history = []
+        test_history = []
+        for epoch in range(self.epochs):
+            if epoch % 100 == 0:
+                (
+                    negative_samples_right_left,
+                    negative_samples_left_right,
+                ) = random_corruption(train_data[:, :2], self.k)
+
+            # Construct feed dictionary
+            feed_dict_attribute_embeddings = construct_feed_dict(
+                embeddings_mat,
+                adjacency_matrix_tuple,
+                placeholders_attribute_embeddings,
+            )
+            feed_dict_attribute_embeddings.update(
+                {placeholders_attribute_embeddings["dropout"]: self.dropout}
+            )
+            feed_dict_attribute_embeddings.update(
+                {
+                    "neg_left:0": negative_samples_left_left,
+                    "neg_right:0": negative_samples_left_right,
+                    "neg2_left:0": negative_samples_right_left,
+                    "neg2_right:0": negative_samples_right_right,
+                }
+            )
+
+            # Training step
+            outs_attribute_embeddings = sess.run(
+                [model_attribute_embeddings.opt_op, model_attribute_embeddings.loss],
+                feed_dict=feed_dict_attribute_embeddings,
+            )
+
+            # Print results
+            logging.info(
+                f"Epoch: {epoch + 1:04d} attribute_embeddings_train_loss={outs_attribute_embeddings[1]:.5f}"
+            )
+            if epoch % 100 == 0 and self.record:
+                self.exhaustive_comparison(
+                    sess,
+                    adjacency_matrix_tuple,
+                    embeddings_mat,
+                    placeholders_attribute_embeddings,
+                    model_attribute_embeddings,
+                    bb_id1,
+                    bb_id2,
+                )
+
+                epoch_history.append(epoch)
+                feed_dict_attribute_embeddings = construct_feed_dict(
+                    embeddings_mat,
+                    adjacency_matrix_tuple,
+                    placeholders_attribute_embeddings,
+                )
+                vec_ae = sess.run(
+                    model_attribute_embeddings.outputs,
+                    feed_dict=feed_dict_attribute_embeddings,
+                )
+                result = metrics.get_hits(vec_ae, train_data[:500], top_k=[1])
+                test_history.append((result[0][1] + result[0][2]) / 2)
+                loss_history.append(outs_attribute_embeddings[1])
+
+        # save the variable in the disk
+        saved_path = saver.save(
+            sess,
+            saved_weights_path,
+        )
+        logging.info(f"model saved in {saved_path}")
+        logging.info("Optimization Finished!")
+        """
+        if self.record:
+            plot_history(
+                epoch_history,
+                loss_history,
+                test_history,
+                history_dir_path,
+                fig_name=model_file_name,
+            )
+        """
 
     def build_model(self, embeddings_tuple, train_data):
         # Define placeholders

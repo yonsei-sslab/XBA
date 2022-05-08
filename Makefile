@@ -21,5 +21,6 @@ table6:
 	./script/table6-x86-aarch64.sh
 
 table7:
-	python train.py --k 25 --layer 5 --target libcrypto-xarch --embedding_type bow --seed 10 --epochs 2000 --norestore --norecord
+	python train.py --k 25 --layer 5 --target libcrypto-xarch --embedding_type bow --seed 10 --epochs 1000 --norestore --norecord
 	./script/table7.sh
+
