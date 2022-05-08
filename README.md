@@ -1,11 +1,41 @@
 # XBA
+This repository implements XBA, a deep learning tool for generating platform-agnostic binary code embeddings. XBA takes a semi-supervised approach to learn semantic matching of binary code blocks compiled for different platforms by using graph neural network with siamese architecture. It outperformed prior works
+
+## Setup
+
+### Structure
+
+    .
+    ├── ...
+    ├── README
+    ├── Pipfile                 # Manages a Python virtualenv
+    ├── Pipfile.lock            # Manages a Python virtualenv (Do not touch)
+    ├── test                    # Test files (alternatively `spec` or `tests`)
+    │   ├── benchmarks          # Load and stress tests
+    │   ├── integration         # End-to-end, integration tests (alternatively `e2e`)
+    │   └── unit                # Unit tests
+    └── ...
+
+### Install
+
+### Dataset
+
+
 
 
 ## Getting Started
 
 ## Detailed Description
 
-## data processing
+### Training
+
+### Exaustive Comparisons
+
+### Indivisual Comparisons
+
+
+
+### data processing
 
 ## How to run
 Prerequisites
@@ -40,5 +70,5 @@ $ python split_seed_alignments.py --target libcrypto
 
 ## Citation
 ```
-
+TBA
 ```
