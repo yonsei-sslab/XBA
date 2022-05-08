@@ -11,6 +11,7 @@ gitpython = "*"
 torch = "*"
 pandas = "*"
 matplotlib = "*"
+numpy = "*"
 
 [dev-packages]
 
