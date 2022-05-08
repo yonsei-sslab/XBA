@@ -179,7 +179,7 @@ class XBA:
 
         logging.info(f"TEST on individual block pairs: {model_file_name}")
 
-        result = metrics.get_pair_rank(vec_ae, bb_id1, bb_id2, False)
+        result = metrics.get_pair_rank(vec_ae, bb_id1, bb_id2)
         file_name = os.path.join(
             result_dir + f"{bb_id1[:5]}-{bb_id2[:5]}" + model_file_name + ".csv"
         )

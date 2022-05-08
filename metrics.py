@@ -72,7 +72,6 @@ def get_pair_rank(
     ae_vec: list,
     bb_id1: list,
     bb_id2: list,
-    equality: bool = True,
 ):
     test_data1, test_data2 = get_test_data()
     vec = ae_vec
@@ -85,17 +84,13 @@ def get_pair_rank(
         distance = scipy.spatial.distance.cityblock(vec[bb1], vec[bb2])
 
         sim = [scipy.spatial.distance.cityblock(vec[bb1], y) for y in Rvec]
-        if equality:
-            rank_index_lr = sum(sim <= distance)
-        else:
-            rank_index_lr = sum(sim < distance)
+
+        rank_index_lr = sum(sim < distance)
         print(f"For BB-{bb1}, BB-{bb2} ranked {rank_index_lr} among {len(Rvec)}")
 
         sim = [scipy.spatial.distance.cityblock(vec[bb2], y) for y in Lvec]
-        if equality:
-            rank_index_rl = sum(sim <= distance)
-        else:
-            rank_index_rl = sum(sim < distance)
+
+        rank_index_rl = sum(sim < distance)
         print(f"For BB-{bb2}, BB-{bb1} ranked {rank_index_rl} among {len(Lvec)}")
 
         result.append([bb1, bb2, rank_index_lr, rank_index_rl])
