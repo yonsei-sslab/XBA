@@ -7,6 +7,7 @@ This repository implements XBA, a deep learning tool for generating platform-agn
 
 ### Structure
 The working directory should be structured as follows.
+
     .
     ├── README
     ├── Pipfile                 # Manages a Python virtualenv.
@@ -16,7 +17,7 @@ The working directory should be structured as follows.
     ├── layers.py               # Define the graph convolution layer.
     ├── metrics.py              # Define the margin-based hinge loss function and hit score calculation.
     ├── models.py               # Define a tensorflow implementation of XBA.
-    // ├── train_general.py        # Train the model on the whole training dataset across binaries
+    ├── train_general.py        # Train the model on the whole training dataset across binaries
     ├── train.py                # Train the model.
     ├── utils.py                # Define utility functions.
     ├── xba.py                  # This file defines XBA class that wraps tensorflow specific code for data load, training, validation, test.
