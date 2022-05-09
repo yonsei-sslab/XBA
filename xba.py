@@ -206,11 +206,13 @@ class XBA:
 
         model_file_name, saved_weights_path = self.get_model_path(model_dir_path)
 
-        if os.path.isfile(saved_weights_path):
+        success = False
+        if os.path.isfile(saved_weights_path + ".index"):
+            success = True
             # restore the saved vairable
             saver.restore(sess, saved_weights_path)
 
-        return sess
+        return sess, success
 
     def train(
         self,
@@ -387,7 +389,7 @@ class XBA:
         epoch_history = []
         loss_history = []
         test_history = []
-        for epoch in range(self.epochs):
+        for epoch in range(self.epochs + 1):
             if epoch % 100 == 0:
                 (
                     negative_samples_right_left,
@@ -454,16 +456,6 @@ class XBA:
         )
         logging.info(f"model saved in {saved_path}")
         logging.info("Optimization Finished!")
-        """
-        if self.record:
-            plot_history(
-                epoch_history,
-                loss_history,
-                test_history,
-                history_dir_path,
-                fig_name=model_file_name,
-            )
-        """
 
     def build_model(self, embeddings_tuple, train_data):
         # Define placeholders

@@ -19,16 +19,17 @@ flags.DEFINE_string(
 )  # "innereye", "deepbindiff", "bow"
 
 flags.DEFINE_float("learning_rate", 0.001, "Initial learning rate.")
-flags.DEFINE_integer("epochs", 10000, "Number of epochs to train.")
+flags.DEFINE_integer("epochs", 2000, "Number of epochs to train.")
 flags.DEFINE_float("dropout", 0, "Dropout rate (1 - keep probability).")
 flags.DEFINE_float("gamma", 3, "Hyper-parameter for margin based loss.")
 flags.DEFINE_integer("k", 100, "Number of negative samples for each positive seed.")
-flags.DEFINE_integer("layer", 2, "Number of layers")
+flags.DEFINE_integer("layer", 5, "Number of layers")
 flags.DEFINE_integer("ae_dim", 200, "Dimension for AE.")
 flags.DEFINE_integer("seed", 5, "Proportion of seeds, 3 means 30%")
 flags.DEFINE_string("log", "INFO", "Set log level")
 flags.DEFINE_bool("record", True, "Record training history")
 flags.DEFINE_bool("restore", False, "Restore and train")
+flags.DEFINE_bool("validate", True, "Validate after training")
 
 xba = XBA(
     FLAGS.target,
@@ -66,6 +67,6 @@ xba.train(
     embeddings_mat,
     placeholders,
     model,
-    validate=False,
+    validate=FLAGS.validate,
     restore=FLAGS.restore,
 )

@@ -61,7 +61,9 @@ xba = XBA(
     model,
 ) = xba.build_model(embeddings_tuple, train_data)
 
-sess = xba.restore()
+sess, success = xba.restore()
+
+assert success
 
 xba.exhaustive_comparison(
     sess,

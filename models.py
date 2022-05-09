@@ -1,7 +1,5 @@
-import logging
 from layers import *
 from metrics import *
-from inits import *
 
 
 class Model(object):

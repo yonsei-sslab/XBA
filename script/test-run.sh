@@ -1,6 +1,4 @@
 #!/bin/bash
-PROGRAM_LIST="curl openssl sqlite3 httpd  libcrypto"
-EMBEDDING_LIST="bow deepbindiff"
 
 epochs=10
 k=1
