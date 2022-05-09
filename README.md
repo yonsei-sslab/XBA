@@ -107,7 +107,7 @@ To test basic funtionality, run the following command.
 ```shellscript
 $ make test
 ```
-It will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one GPU). The half of the labeled data is used for training and the another half is for validation. After each training finishes, you will see outputs of hit scores with the validation data as below. Note that the score is not high enough since 10 epoch is not enough to train GCN.
+It will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). The half of the labeled data is used for training and the another half is for validation. After each training finishes, you will see outputs of hit scores with the validation data as below. Note that the score is not high enough since mostly 10 epochs are not enough to train GCN.
 **outputs**
 ```
 ...
@@ -211,10 +211,12 @@ $ pipenv run -- python baseline.py --target{target} --embedding_type {embedding_
 ```
 
 
-
-
 ### Reproduce experiment results
-
+```shellscript
+$ make table6
+$ make table7
+$ make table8
+```
 
 
 
