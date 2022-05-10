@@ -1,4 +1,3 @@
-import torch
 import tensorflow as tf
 import utils
 import logging
@@ -15,7 +14,7 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     "embedding_type", "innereye", "Embedding type string."
 )  # "innereye", "deepbindiff", "bow"
-flags.DEFINE_integer("seed", 10, "Proportion of seeds, 3 means 30%")
+flags.DEFINE_integer("seed", 10, "Proportion of seeds")
 flags.DEFINE_string("log", "INFO", "Set log level")
 
 # specify --log=DEBUG or --log=debug
@@ -25,9 +24,9 @@ if not isinstance(numeric_level, int):
 logging.basicConfig(level=numeric_level)
 
 if FLAGS.embedding_type == "innereye":
+    # To be fair, data that is not used in training InnerEye will be used to test.
     FLAGS.seed = 5
 
-# Should use vocab for training
 # Load data
 (
     adjacency_matrix,
@@ -35,9 +34,9 @@ if FLAGS.embedding_type == "innereye":
     embeddings_mat,
     training_data,
     test_data,
-) = utils.load_data(FLAGS.target, FLAGS.embedding_type)
+) = utils.load_data(FLAGS.target, FLAGS.embedding_type, FLAGS.seed)
 
-print(f"Baseline (without GCN) : {FLAGS.target}-{FLAGS.embedding_type}")
+logging.info(f"Baseline (without GCN) : {FLAGS.target}-{FLAGS.embedding_type}")
 base_dir_path = utils.get_git_root("train.py") + "/result/"
 file_name = base_dir_path + f"baseline-{FLAGS.target}-{FLAGS.embedding_type}.csv"
 if FLAGS.embedding_type == "innereye":

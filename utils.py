@@ -412,8 +412,7 @@ def load_bow_embeddings(
                     stat[word] = stat.get(word, 0) + 1
 
     if embedding_type == "bow-general" and target == test:
-        with open(f"target-{target}-test-{test}-stat.json", "w") as fp:
-            # json.dump(stat, fp)
-            pass
+        with open(f"./result/target-{target}-test-{test}-stat.json", "w") as fp:
+            json.dump(stat, fp)
 
     return sp.coo_matrix((data, (row, col)), shape=(num_of_entities, len(vocab)))

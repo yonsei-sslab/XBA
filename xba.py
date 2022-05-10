@@ -82,78 +82,6 @@ class XBA:
             embeddings_mat,
         )
 
-    """
-    def test(
-        self,
-        model_dir_path: str = "./saved_model",
-        result_dir: str = "./result/",
-    ):
-        (
-            num_supports,
-            adjacency_matrix_tuple,
-            embeddings_tuple,
-            _,
-            test_data,
-            embeddings_mat,
-        ) = self.data_load()
-
-        tf.compat.v1.disable_v2_behavior()
-
-        # Define placeholders
-        placeholders_attribute_embeddings = {
-            "support": [tf.sparse_placeholder(tf.float32) for _ in range(num_supports)],
-            "features": tf.placeholder(
-                tf.float32
-            ),  # tf.spaese_placeholder(tf.float32),
-            "dropout": tf.placeholder_with_default(0.0, shape=()),
-            "num_features_nonzero": tf.placeholder_with_default(0, shape=()),
-        }
-
-        # Create model
-        model_attribute_embeddings = GCN_Align(
-            placeholders_attribute_embeddings,
-            input_dim=embeddings_tuple[2][1],
-            output_dim=self.ae_dim,
-            ILL=test_data,
-            sparse_inputs=False,
-            featureless=False,
-            logging=True,
-            num_layer=self.layer,
-        )
-
-        # Initialize session
-        sess = tf.Session()
-
-        # create saver object
-        saver = tf.train.Saver()
-
-        # Init variables
-        sess.run(tf.global_variables_initializer())
-
-        # restore the saved vairable
-        assert self.model_file_name
-        saved_weights_path = os.path.join(
-            model_dir_path, self.model_file_name + ".index"
-        )
-        saver.restore(
-            sess,
-            saved_weights_path,
-        )
-
-        feed_dict_attribute_embeddings = construct_feed_dict(
-            embeddings_mat,
-            adjacency_matrix_tuple,
-            placeholders_attribute_embeddings,
-        )
-        vec_ae = sess.run(
-            model_attribute_embeddings.outputs, feed_dict=feed_dict_attribute_embeddings
-        )
-
-        print_and_save_results(
-            test_data, vec_ae, self.model_file_name, result_dir, self.record, self.seed
-        )
-    """
-
     def exhaustive_comparison(
         self,
         sess,
@@ -185,7 +113,11 @@ class XBA:
 
         result = metrics.get_pair_rank(vec_ae, bb_id1, bb_id2)
         file_name = os.path.join(
-            result_dir + f"{bb_id1[:5]}-{bb_id2[:5]}" + model_file_name + ".csv"
+            result_dir
+            + "pair-result-"
+            + model_file_name
+            + f"{bb_id1[:5]}-{bb_id2[:5]}"
+            + ".csv"
         )
         with open(file_name, "w") as csvfile:
             # creating a csv writer object
@@ -204,7 +136,7 @@ class XBA:
         # Init variables
         sess.run(tf.global_variables_initializer())
 
-        model_file_name, saved_weights_path = self.get_model_path(model_dir_path)
+        _, saved_weights_path = self.get_model_path(model_dir_path)
 
         success = False
         if os.path.isfile(saved_weights_path + ".index"):
@@ -217,7 +149,6 @@ class XBA:
     def train(
         self,
         adjacency_matrix_tuple,
-        embeddings_tuple,
         train_data,
         test_data,
         embeddings_mat,
@@ -297,7 +228,7 @@ class XBA:
             logging.info(
                 f"Epoch: {epoch + 1:04d} attribute_embeddings_train_loss={outs_attribute_embeddings[1]:.5f}"
             )
-            if epoch % 500 == 0 and self.record:
+            if epoch % 100 == 0 and self.record:
                 epoch_history.append(epoch)
                 feed_dict_attribute_embeddings = construct_feed_dict(
                     embeddings_mat,
@@ -336,126 +267,7 @@ class XBA:
                 embeddings_mat,
                 adjacency_matrix_tuple,
                 placeholders_attribute_embeddings,
-                model_file_name,
             )
-
-    def train_pair_validate(
-        self,
-        adjacency_matrix_tuple,
-        embeddings_tuple,
-        train_data,
-        test_data,
-        embeddings_mat,
-        placeholders_attribute_embeddings,
-        model_attribute_embeddings,
-        bb_id1,
-        bb_id2,
-        history_dir_path: str = "./history",
-        model_dir_path: str = "./saved_model",
-        restore: bool = False,
-        validate: bool = True,
-    ):
-
-        # Initialize session
-        sess = tf.Session()
-
-        # create saver object
-        saver = tf.train.Saver()
-
-        # Init variables
-        sess.run(tf.global_variables_initializer())
-
-        model_file_name, saved_weights_path = self.get_model_path(model_dir_path)
-
-        if restore:
-            if os.path.isfile(saved_weights_path + ".index"):
-                # restore the saved vairable
-                saver.restore(sess, saved_weights_path)
-
-        # Generate negative samples
-        train_data_len = len(train_data)
-        L = np.ones((train_data_len, self.k)) * (
-            train_data[:, 0].reshape((train_data_len, 1))
-        )
-        # [left_block_id_1, left_block_id_1, left_block_id_1, ..., left_block_id_100, left_block_id_100, left_block_id_100, left_block_id_100, ...]
-        negative_samples_left_left = L.reshape((train_data_len * self.k,))
-        L = np.ones((train_data_len, self.k)) * (
-            train_data[:, 1].reshape((train_data_len, 1))
-        )
-        # [right_block_id_1, right_block_id_1, right_block_id_1, ..., right_block_id_100, right_block_id_100, right_block_id_100, right_block_id_100, ...]
-        negative_samples_right_right = L.reshape((train_data_len * self.k,))
-
-        # Train model
-        epoch_history = []
-        loss_history = []
-        test_history = []
-        for epoch in range(self.epochs + 1):
-            if epoch % 100 == 0:
-                (
-                    negative_samples_right_left,
-                    negative_samples_left_right,
-                ) = random_corruption(train_data[:, :2], self.k)
-
-            # Construct feed dictionary
-            feed_dict_attribute_embeddings = construct_feed_dict(
-                embeddings_mat,
-                adjacency_matrix_tuple,
-                placeholders_attribute_embeddings,
-            )
-            feed_dict_attribute_embeddings.update(
-                {placeholders_attribute_embeddings["dropout"]: self.dropout}
-            )
-            feed_dict_attribute_embeddings.update(
-                {
-                    "neg_left:0": negative_samples_left_left,
-                    "neg_right:0": negative_samples_left_right,
-                    "neg2_left:0": negative_samples_right_left,
-                    "neg2_right:0": negative_samples_right_right,
-                }
-            )
-
-            # Training step
-            outs_attribute_embeddings = sess.run(
-                [model_attribute_embeddings.opt_op, model_attribute_embeddings.loss],
-                feed_dict=feed_dict_attribute_embeddings,
-            )
-
-            # Print results
-            logging.info(
-                f"Epoch: {epoch + 1:04d} attribute_embeddings_train_loss={outs_attribute_embeddings[1]:.5f}"
-            )
-            if epoch % 100 == 0 and self.record:
-                self.exhaustive_comparison(
-                    sess,
-                    adjacency_matrix_tuple,
-                    embeddings_mat,
-                    placeholders_attribute_embeddings,
-                    model_attribute_embeddings,
-                    bb_id1,
-                    bb_id2,
-                )
-
-                epoch_history.append(epoch)
-                feed_dict_attribute_embeddings = construct_feed_dict(
-                    embeddings_mat,
-                    adjacency_matrix_tuple,
-                    placeholders_attribute_embeddings,
-                )
-                vec_ae = sess.run(
-                    model_attribute_embeddings.outputs,
-                    feed_dict=feed_dict_attribute_embeddings,
-                )
-                result = metrics.get_hits(vec_ae, train_data[:500], top_k=[1])
-                test_history.append((result[0][1] + result[0][2]) / 2)
-                loss_history.append(outs_attribute_embeddings[1])
-
-        # save the variable in the disk
-        saved_path = saver.save(
-            sess,
-            saved_weights_path,
-        )
-        logging.info(f"model saved in {saved_path}")
-        logging.info("Optimization Finished!")
 
     def build_model(self, embeddings_tuple, train_data):
         # Define placeholders
@@ -499,7 +311,6 @@ class XBA:
         embeddings_mat,
         adjacency_matrix_tuple,
         placeholders_attribute_embeddings,
-        model_file_name,
         result_dir: str = "./result/",
     ):
         feed_dict_attribute_embeddings = construct_feed_dict(
@@ -510,6 +321,8 @@ class XBA:
         vec_ae = sess.run(
             model_attribute_embeddings.outputs, feed_dict=feed_dict_attribute_embeddings
         )
+
+        model_file_name, _ = self.get_model_path("")
 
         print_and_save_results(
             test_data, vec_ae, model_file_name, result_dir, self.record, self.seed

@@ -17,7 +17,12 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     "embedding_type", "innereye", "Embedding type string."
 )  # "innereye", "deepbindiff", "bow"
-
+flags.DEFINE_string("model_name", "", "Saved model file name")
+flags.DEFINE_string(
+    "test_target",
+    "curl",
+    "Test program (only required when running the table 8 experiment)",
+)
 flags.DEFINE_float("learning_rate", 0.001, "Initial learning rate.")
 flags.DEFINE_integer("epochs", 2000, "Number of epochs to train.")
 flags.DEFINE_float("dropout", 0, "Dropout rate (1 - keep probability).")
@@ -30,6 +35,10 @@ flags.DEFINE_string("log", "INFO", "Set log level")
 flags.DEFINE_bool("record", True, "Record training history")
 flags.DEFINE_bool("restore", False, "Restore and train")
 flags.DEFINE_bool("validate", True, "Validate after training")
+
+if not FLAGS.model_name:
+    # Model name is not given
+    FLAGS.model_name = None
 
 xba = XBA(
     FLAGS.target,
@@ -44,6 +53,8 @@ xba = XBA(
     FLAGS.seed,
     FLAGS.log,
     FLAGS.record,
+    model_file_name=FLAGS.model_name,
+    test_program=FLAGS.test_target,
 )
 
 (
@@ -61,7 +72,6 @@ xba = XBA(
 
 xba.train(
     adjacency_matrix_tuple,
-    embeddings_tuple,
     train_data,
     test_data,
     embeddings_mat,

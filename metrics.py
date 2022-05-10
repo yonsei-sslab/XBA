@@ -136,8 +136,3 @@ def get_hits(vec, test_pair, top_k=(1, 10, 50, 100)):
         result[i].append(top_rl[i] / len(test_pair) * 100)
 
     return result
-
-
-def get_combine_hits(se_vec, ae_vec, beta, test_pair, top_k=(1, 10, 50, 100)):
-    vec = np.concatenate([se_vec * beta, ae_vec * (1.0 - beta)], axis=1)
-    return get_hits(vec, test_pair, top_k)
