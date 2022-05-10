@@ -21,7 +21,7 @@ def counter():
 
 # Generate individual vocabulary
 for program in programs:
-    data_root_dir_path = utils.get_git_root("utils.py") + "/data/done/" + program
+    data_root_dir_path = utils.get_git_root() + "/data/done/" + program
     disasm_path = data_root_dir_path + "/disasm_innereye.json"
     seed_path = data_root_dir_path + "/alignment.csv"
     alignments = pd.read_csv(seed_path, header=None)
@@ -60,7 +60,7 @@ for test in programs:
         if target == test:
             continue
 
-        data_root_dir_path = utils.get_git_root("utils.py") + "/data/done/" + target
+        data_root_dir_path = utils.get_git_root() + "/data/done/" + target
         disasm_path = data_root_dir_path + "/disasm_innereye.json"
         seed_path = data_root_dir_path + "/alignment.csv"
         alignments = pd.read_csv(seed_path, header=None)

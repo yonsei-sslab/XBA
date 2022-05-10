@@ -82,7 +82,7 @@ def get_pair_rank(
 def get_test_data():
     from utils import get_git_root, load_relation_file
 
-    data_root_dir_path = get_git_root("utils.py") + "/data/done/" + FLAGS.target
+    data_root_dir_path = get_git_root() + "/data/done/" + FLAGS.target
     relation_triples_path_left = data_root_dir_path + "/gcn1-relation.csv"
     relation_triples_path_right = data_root_dir_path + "/gcn2-relation.csv"
     relation_set1 = load_relation_file(relation_triples_path_left)
