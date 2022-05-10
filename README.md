@@ -107,7 +107,7 @@ If you succeed to download the repository and set up a proper python environment
 ```shellscript
 $ make test
 ```
-This will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). Half of the labeled data is used for training and another half is for validation. After each training finishes, you will see outputs of hit scores with the validation data as below. Note that the score is not high enough since mostly 10 epochs are not enough to train multi-layer GCN. The name of the saved model has the following format by default.
+This will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). Half of the labeled data is used for training and another half is for validation. After each training finishes, you will see outputs of hit scores calculated with the validation data as below. Note that the score is not high enough since mostly 10 epochs are not enough to train multi-layer GCN. The name of the saved model has the following format by default.
 ```
 "gcn-{the number of layers}layer-{target program name}-{embedding type}-seed{proportion of seed alignment}-epoch{the number of epochs}-D{self.ae_dim}-gamma{gamma}-k{k}-dropout{dropout}-LR{lr}"
 ```
@@ -180,13 +180,7 @@ xba = XBA(
     k, layer, ae_dim, seed, log, record,
 )
 
-(
-    adjacency_matrix_tuple,
-    embeddings_tuple,
-    train_data,
-    test_data,
-    embeddings_mat,
-) = xba.data_load()
+adjacency_matrix_tuple, embeddings_tuple, train_data, test_data, embeddings_mat = xba.data_load()
 
 placeholders, model = xba.build_model(embeddings_tuple, train_data)
 
@@ -195,6 +189,7 @@ xba.train(
     embeddings_mat, placeholders, model, validate=FLAGS.validate, restore=FLAGS.restore,
 )
 ```
+
 If `record` is set to True, then after the training, the history of hit scores and the value of loss function is stored in the `history` directory. A sample is as follows.
 ```
 {"epoch": [0, 100, 200, 300, 400, 500, 600, 700, 800, 900], "loss": ["0.87975836", "0.028531872", "0.013416106", "0.008701273", "0.0060030213", "0.0044472036", "0.0037757999", "0.0030763736", "0.0026834046", "0.002365994"], "hits": ["61.75739713361072", "76.1904761904762", "76.98653490522423", "77.57165973185391", "77.99786176606564", "78.44284558483588", "79.08287101248266", "79.22445677300047", "79.72289644012946", "79.8052473416551"]}
@@ -209,7 +204,6 @@ Hits,AB,BA
 10,90.99570437272827,92.15772662187466
 50,97.18030620112347,94.34959797334508
 100,97.76957814737305,98.33131402136799
-
 ```
 
 
