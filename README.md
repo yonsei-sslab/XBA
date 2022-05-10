@@ -4,6 +4,8 @@ This repository implements XBA, a deep learning tool for generating platform-agn
 ![overview](./gcnoverview.jpg)
 
 ## Getting Started
+After cloning the repository, make sure you unzip `XBA/data/done/libcrypto/deepbindiff_embeddings.pt.tar.gz` in the same directory.
+
 ### Directory Structure
 The working directory should be structured as follows.
 
