@@ -163,9 +163,9 @@ The main training script is `train.py` and it needs the following parameters.
 * `ae_dim`: A dimension of output embedding. By default, it is set to 200.
 * `seed`: A proportion of the dataset to be included in the train split. For example, if it is 3 then 30% of the data will be used for training.
 * `log`: Print log if True
-* `record`: Record a history of training in the `history` directory.
+* `record`: Record history of training in the `history` directory and the hit scores in the `result` directory.
 * `restore`: Before training, restore the parameters to continue training.
-* `validate`: Record hit scores after training in the `result` directory.
+* `validate`: Validation after the training.
 
 The following code snippet trains XBA on {`target`} data with {`embedding_type`} features. {`seed`}% seed alignments are used for training and after finishing training model parameters are stored in the `saved_model` directory. When instantiating XBA class, you should put hyperparameters for the training that will be being used for all afterward operations with the class. Having the XBA class instantiated with proper hyperparameters, the first thing you can do is loading data. You can load the data that we've preprocessed with a single line of code. The return values of `data_load()` are as follow:
 
