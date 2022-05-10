@@ -92,7 +92,7 @@ $ pip install -r requirements.txt
 After activating the python virtual environment, you should be able to run any commands or scripts presented below.
 
 ### Dataset
-For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely used and satisfy the criteria. Selected software covers a broad range of software disciplines; *SQLite3* (database), *OpenSSL* (network), *cURL* (file transfer), *Httpd* (webserver), *libcrypto* (crypto library), *glibc* (standard library). We used IDA Pro to extract the graph representation of each binary that is stored in `data` directory.
+For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely used and satisfy the criteria. Selected software covers a broad range of software disciplines; *SQLite3* (database), *OpenSSL* (network), *cURL* (file transfer), *Httpd* (webserver), *libcrypto* (crypto library), *glibc* (standard library). We used IDA Pro to extract the graph representations of each binary and stored them in the `data` directory.
 
 If users want to run XBA on different binaries, they have to first convert a binary into a proper input format (*i.e.*, Binary Disassembly Graph) that is specified in the paper. Required files for binary disassembly graph should be structured like the above `data` directory structure. The data preprocessing is quite tricky here and we do not provide functionality for the data preprocessing. Thus we recommend you start with and be familiar with the data that we've already preprocessed and put in the `data` directory.
 
@@ -106,7 +106,7 @@ If you succeed to download the repository and set up a proper python environment
 ```shellscript
 $ make test
 ```
-This will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). Half of the labeled data is used for training and another half is for validation. After each training finishes, you will see outputs of hit scores as below. Note that the score is not high enough since mostly 10 epochs are not enough to train multi-layer GCN. The name of the saved model has the following format by default.
+This will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). Half of the labeled data is used for training and another half is for validation. After each training finishes, you will see outputs of hit scores as below. Note that the score is not high enough since mostly 10 epochs are not enough to train multi-layer GCN.
 
 **outputs**
 ```
@@ -140,7 +140,7 @@ INFO:root:Hits@100: 82.78%
 ...
 ```
 
-After the training the model parameters are saved by tensorflow *Saver* and it can be easily restored and utilized again with the given python code, `test.py`. By dafult, the model parameters are saved in `saved_model` directory and have the following file name format.
+After the training, the model parameters are saved by TensorFlow *Saver* and it can be easily restored and utilized again with the given python code, `test.py`. By default, the model parameters are saved in the `saved_model` directory and have the following file name format.
 ```
 "gcn-{the number of layers}layer-{target program name}-{embedding type}-seed{proportion of seed alignment}-epoch{the number of epochs}-D{self.ae_dim}-gamma{gamma}-k{k}-dropout{dropout}-LR{lr}"
 ```
@@ -149,30 +149,30 @@ After the training the model parameters are saved by tensorflow *Saver* and it c
 ## Detailed Description
 
 ### XBA class
-`xba.py` defines the main class of XBA. It implements the core functionalities of XBA including training, validation, data loading, and building the model. To use XBA, users should first instantiate this class and can utilize proper methods according to their use cases. In this way, they can use XBA as it is implemented. If users want to make specific changes in implementations such as modifying tensorflow training code or changing the model architecture, `xba.py` is a good starting point to take a look at.
+`xba.py` defines the main class of XBA. It implements the core functionalities of XBA including training, validation, data loading, and building the model. To use XBA, users should first instantiate this class and further functionalities are provided as methods of XBA class. In this way, they can use XBA as it is implemented. If users want to make specific changes in implementations such as modifying tensorflow training code or changing the model architecture, `xba.py` is a good starting point to take a look at.
 
 ### Training
 The main training script is `train.py` and it needs the following parameters.
 
-* `target`: A name of target binary for training. Data will be loaded from `./data/{target}/`. *cURL*, *Httpd*, *libc*, *libcrypto*, *libcrypto-xarch*, *OpenSSL*, *sqlite3* are available by default.
-* `embedding_type`: A type of base feature of binary code blocks that will be an input of the first layer of GCN. BoW and DeepBinDiff are available by default.
+* `target`: A name of target binary for training. Data will be loaded from `./data/{target}/`. *cURL*, *Httpd*, *libc*, *libcrypto*, *libcrypto-xarch*, *OpenSSL*, *sqlite3* are available currently.
+* `embedding_type`: A type of base feature of binary code blocks that will be an input of the first layer of GCN. BoW and DeepBinDiff are available currently.
 * `learning_rate`: A hyperparameter for the Adam optimizer. The default value is 1e-03.
-* `epochs`: The epoch number of training. Note that the batch size is 1 by default.
+* `epochs`: The epoch number of training. Note that the batch size is 1 by default, so there is one iteration per epoch.
 * `dropout`: A hyperparameter for the training. 0 by default.
 * `gamma`: A hyperparameter for the margin-based hinge loss.
 * `k`: The number of negative samples per positive pair.
 * `layer`: The number of GCN layers that XBA uses.
-* `ae_dim`: A dimension of output embedding. By default, it is set to 200.
+* `ae_dim`: The dimension of output embedding. By default, it is set to 200.
 * `seed`: A proportion of the dataset to be included in the train split. For example, if it is 3 then 30% of the data will be used for training.
-* `log`: Print log if True
+* `log`: Default python logging level. A default value is *INFO*.
 * `record`: Record history of training in the `history` directory and the hit scores in the `result` directory.
 * `restore`: Before training, restore the parameters to continue training.
 * `validate`: Validation after the training.
 
-The following code snippet trains XBA on {`target`} data with {`embedding_type`} features. {`seed`}% seed alignments are used for training and after finishing training model parameters are stored in the `saved_model` directory. When instantiating XBA class, you should put hyperparameters for the training that will be being used for all afterward operations with the class. Having the XBA class instantiated with proper hyperparameters, the first thing you can do is loading data. You can load the data that we've preprocessed with a single line of code. The return values of `data_load()` are as follow:
+The following code snippet trains XBA on {`target`} data with {`embedding_type`} features. {`seed`}% seed alignments are used for training and after finishing training the model parameters are stored in the `saved_model` directory. When instantiating XBA class, users should put hyperparameters for the training that will also be used for all afterward operations with the class. Having the XBA class instantiated with proper hyperparameters, the first thing user can do is loading data. Users can load the data that we've already preprocessed with a single line of code. The return values of `data_load()` are as follow:
 
-* adjacency_matrix_tuple: this is an adjacency matric in COOrdinate format. Each entry is calculated based on fun/ifun that is specified in our paper.
-* embeddings_tuple, embeddings_mat: these are base features of all nodes in the binary graph. It is generated by the method specified with the `embedding_type` parameter.
+* adjacency_matrix_tuple: this is an adjacency matric in COOrdinate format. Each entry is calculated based on fun/ifun of edges in the graph, which is explained in our paper.
+* embeddings_tuple, embeddings_mat: these are base features of all nodes in the graph. It is generated by the method specified by the `embedding_type` parameter.
 * test_data, train_data: lists of labeled data
 
 `build_model()` builds the GCN model and `train()` gets the data and model as inputs to train the model.
@@ -194,14 +194,14 @@ xba.train(
 )
 ```
 
-If `record` is set to True, then after the training, the history of hit scores and the value of loss function is stored in the `history` directory. A sample is as follows.
+If `record` is set to True, then after the training, the history of hit scores and the value of loss function are stored in the `history` directory. The current period of recording is 100 epochs. A sample history is as follows.
 ```
 {"epoch": [0, 100, 200, 300, 400, 500, 600, 700, 800, 900], "loss": ["0.87975836", "0.028531872", "0.013416106", "0.008701273", "0.0060030213", "0.0044472036", "0.0037757999", "0.0030763736", "0.0026834046", "0.002365994"], "hits": ["61.75739713361072", "76.1904761904762", "76.98653490522423", "77.57165973185391", "77.99786176606564", "78.44284558483588", "79.08287101248266", "79.22445677300047", "79.72289644012946", "79.8052473416551"]}
 ```
 
 ![training history](history/gcn-3layer-libcrypto-bow-seed50-epoch1000-D200-gamma3.0-k50-dropout0.0-LR0.001.png)
 
-If `validate` is set to True, then after the training the hit scores using validation data is stored in the `result` directory. A sample is as follows.
+If `validate` is set to True, then after the training the hit scores are calculated using test data and the results are stored in the `result` directory if `record` is set to True. A sample hit score is as follows.
 ```
 Hits,AB,BA
 1,85.21863641370196,87.63630355766054
@@ -209,15 +209,23 @@ Hits,AB,BA
 50,97.18030620112347,94.34959797334508
 100,97.76957814737305,98.33131402136799
 ```
+The first column means the ranking within that the corresponding block should be. The second and third columns specify bi-directional scores.
 
 ### Indivisual Comparisons
-To calculate the ranking of indivisual block pairs which do not appear in seed alignment, you can use `get_rank.py`. It receives lists of basic blocks and conduct a exhaustive comparison between them. You can use the following command.
+To calculate the ranking of indivisual block pairs which do not appear in seed alignment, you can use `get_rank.py`. It receives lists of basic blocks and conduct a exhaustive comparison between them. For example,
 
 ```shellscript
 $ python ./src/get_rank.py --layer 5 --k 25 --seed 10 --learning_rate 0.001 --gamma 3 --epochs 200 --ae_dim 200 --target libcrypto-xarch --embedding_type bow --bb_id1="93448, 93449" --bb_id2="197104, 197105" # aesni_gcm_initkey
 ```
 
-Note that before doing this, the corresponding model should be trained.
+With this command, you can calculate the ranking of individual blocks that are included in *libcrypto-xarch*. Note that before doing this, the corresponding model should be trained. The output will be like the below.
+```
+BB ID 1,BB ID 2,AB,BA
+93448,197104,161,39
+93448,197105,17,36
+93449,197104,15346,1064
+93449,197105,1683,189
+```
 
 ### Baseline
 Run the baseline with {*embedding type*} feature on {*target program name*} (*i.e.*, matching only with BB attribute features).
@@ -226,8 +234,8 @@ $ python ./src/baseline.py --target {target program name} --embedding_type {embe
 ```
 
 
-### Reproduce experiment results
-The below commands will reproduce the corresponding experiments.
+### Reproduce experiment results in the paper
+For convenience, we wrote scripts for reproducing the experimental results presented in the paper. The below commands will do it for you.
 
 ```shellscript
 $ make table6
