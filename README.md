@@ -95,19 +95,22 @@ After activate the python virtual environment, you should be able to run any com
 ### Dataset
 For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely-used and satisfy the criteria. Selected software covers a broad range of software disciplines; SQLite3 (database), OpenSSL (network), cURL (file transfer), Httpd (web server), libcrypto (crypto library), glibc (standard library). We used IDA pro to extract the graph representation of each binary that is stored in `data` directory.
 
-If users want to run XBA on different binaries, they have to first convert a binary into a proper input format (*i.e.*, Binary Disassembly Graph) that is specified in the paper and structure required files like the above `data` directory structure.
+If users want to run XBA on different binaries, they have to first convert a binary into a proper input format (*i.e.*, Binary Disassembly Graph) that is specified in the paper. Required files for binary disassembly graph should be structured like the above `data` directory structure. The data preprocessing is quite tricky here and we do not provide a functionality for the data preprocessing. Thus we recommend you strat with and be familiar with the data that we've already preprocessed and put in `data` directory.
 
-XBA basically requires users to specify the proportion of the dataset to be included in the train split. To make this split deterministic, we first split the dataset and store the train split and test split seperately. Below command will do this for you. You will only need this command if you newly add dataset. As a dafult, we have split our dataset with a ratio of 10/20/30/40/50%.
+After preprocess the graph data into a proper format you should first split the pair-wise-labeled data manually. XBA basically requires users to specify the proportion of the dataset to be included in the train split. To make this split deterministic, users are required to split the dataset in advance and store the train split and test split seperately. Below command will do this for you. You would only need this command if you newly added dataset. By dafult we have split our dataset with a ratio of 10/20/30/40/50%.
 ```shellscript
 $ python split_seed_alignments.py --target libcrypto
 ```
  
 ### Test run
-To test basic funtionality, run the following command.
+If you success to download repository and setup a proper python environment you should be able to test every functionality of XBA. To test basic funtionality, run the following command.
 ```shellscript
 $ make test
 ```
-It will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). The half of the labeled data is used for training and the another half is for validation. After each training finishes, you will see outputs of hit scores with the validation data as below. Note that the score is not high enough since mostly 10 epochs are not enough to train GCN.
+This will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). The half of the labeled data is used for training and the another half is for validation. After each training finishes, you will see outputs of hit scores with the validation data as below. Note that the score is not high enough since mostly 10 epochs are not enough to train multi-layer GCN. A name of the saved model has a following format by default.
+```
+"gcn-{the number of layers}layer-{target program name}-{embedding type}-seed{proportion of seed alignment}-epoch{the number of epochs}-D{self.ae_dim}-gamma{gamma}-k{k}-dropout{dropout}-LR{lr}"
+```
 **outputs**
 ```
 ...
@@ -144,7 +147,7 @@ INFO:root:Hits@100: 82.78%
 ## Detailed Description
 
 ### XBA class
-`xba.py` defines the main class of XBA. It implementes a few core funtionalities of XBA including training, validation, data loading, and building the model. To use XBA, users should fisrt instantiate this class, and by calling proper methods according to the purpose of analysis they can use XBA as it is implemented. If users want to make a specific changes in implementations such as modifying tensorflow training code or changing the model architecture, `xba.py` is a good starting point to take a look.
+`xba.py` defines the main class of XBA. It implementes the core funtionalities of XBA including training, validation, data loading, and building the model. To use XBA, users should fisrt instantiate this class, and can utilize proper methods according to their use cases. In this way they can use XBA as it is implemented. If users want to make a specific changes in implementations such as modifying tensorflow training code or changing the model architecture, `xba.py` is a good starting point to take a look.
 
 ### Training
 The main training script is `train.py` and it needs the following parameters.
@@ -164,14 +167,17 @@ The main training script is `train.py` and it needs the following parameters.
 * restore: Before training, restore the parameters to continue training.
 * validate: Record hit scores after training in `result` directory.
 
+The following code snippet trains XBA on {target} data with {embedding_type} features. {seed}% seed alignments are used for training and after finishing training model parameters are stored in `saved_model` directory. When instatiating XBA class, you should put hyperparameters for the training that will be being used for all afterward operations with the class. Having the xba class instantiated with proper hyperparameters, the first thing you can do is loading data. You can load the data that we've preprocessed with a single line of code. The return values of `data_load()` are as follow:
 
-Train XBA on {target} based on {embedding_type} with {seed}% seed alignments and store models in `saved_model` directory.
+* adjacency_matrix_tuple: this is an adjacenty matric in COOrdinate format. Each entry is calculated based on fun/ifun that is specified in our paper.
+* embeddings_tuple, embeddings_mat: these are base features of all nodes in the binary graph. It is generated by the method specified with `embedding_type` parameter.
+* test_data, train_data: 
 
 ```Python
 
 xba = XBA(
-    FLAGS.target, FLAGS.embedding_type, FLAGS.learning_rate, FLAGS.epochs, FLAGS.dropout, FLAGS.gamma,
-    FLAGS.k, FLAGS.layer, FLAGS.ae_dim, FLAGS.seed, FLAGS.log, FLAGS.record,
+    target, embedding_type, learning_rate, epochs, dropout, FLAGS.gamma,
+    k, layer, ae_dim, seed, log, record,
 )
 
 (
@@ -185,7 +191,7 @@ xba = XBA(
 placeholders, model = xba.build_model(embeddings_tuple, train_data)
 
 xba.train(
-    adjacency_matrix_tuple, embeddings_tuple, train_data, test_data,
+    adjacency_matrix_tuple, train_data, test_data,
     embeddings_mat, placeholders, model, validate=FLAGS.validate, restore=FLAGS.restore,
 )
 ```
@@ -218,6 +224,7 @@ $ make table7
 $ make table8
 ```
 
+### Metrics
 
 
 
@@ -226,3 +233,7 @@ $ make table8
 ```
 TBA
 ```
+
+## Future works
+* XBA is now implemented with Tensorflow, but it is using deprecated features of Tensorflow v1. More recent version of deep learning library can adopted.
+* The data preprocessing is tircky to deploy for now. There will be more easy way to implement it.
