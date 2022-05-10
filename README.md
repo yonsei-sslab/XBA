@@ -93,7 +93,7 @@ $ pip install -r requirements.txt
 After activating the python virtual environment, you should be able to run any commands or scripts presented below.
 
 ### Dataset
-For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely used and satisfy the criteria. Selected software covers a broad range of software disciplines; SQLite3 (database), OpenSSL (network), cURL (file transfer), Httpd (webserver), libcrypto (crypto library), glibc (standard library). We used IDA Pro to extract the graph representation of each binary that is stored in `data` directory.
+For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely used and satisfy the criteria. Selected software covers a broad range of software disciplines; *SQLite38 (database), *OpenSSL* (network), *cURL* (file transfer), *Httpd* (webserver), *libcrypto* (crypto library), *glibc* (standard library). We used IDA Pro to extract the graph representation of each binary that is stored in `data` directory.
 
 If users want to run XBA on different binaries, they have to first convert a binary into a proper input format (*i.e.*, Binary Disassembly Graph) that is specified in the paper. Required files for binary disassembly graph should be structured like the above `data` directory structure. The data preprocessing is quite tricky here and we do not provide functionality for the data preprocessing. Thus we recommend you start with and be familiar with the data that we've already preprocessed and put in the `data` directory.
 
@@ -152,22 +152,22 @@ INFO:root:Hits@100: 82.78%
 ### Training
 The main training script is `train.py` and it needs the following parameters.
 
-* target: A name of target binary for training. Data will be loaded from `./data/{target}/`. *cURL*, *Httpd*, *libc*, *libcrypto*, *libcrypto-xarch*, *OpenSSL*, *sqlite3* are available by default.
-* embedding_type: A type of base feature of binary code blocks that will be an input of the first layer of GCN. BoW and DeepBinDiff are available by default.
-* learning_rate: A hyperparameter for the Adam optimizer. The default value is 1e-03.
-* epochs: The epoch number of training. Note that the batch size is 1 by default.
-* dropout: A hyperparameter for the training. 0 by default.
-* gamma: A hyperparameter for the margin-based hinge loss.
-* k: The number of negative samples per positive pair.
-* layer: The number of GCN layers that XBA uses.
-* ae_dim: A dimension of output embedding. By default, it is set to 200.
-* seed: A proportion of the dataset to be included in the train split. For example, if it is 3 then 30% of the data will be used for training.
-* log: Print log if True
-* record: Record a history of training in the `history` directory.
-* restore: Before training, restore the parameters to continue training.
-* validate: Record hit scores after training in the `result` directory.
+* `target`: A name of target binary for training. Data will be loaded from `./data/{target}/`. *cURL*, *Httpd*, *libc*, *libcrypto*, *libcrypto-xarch*, *OpenSSL*, *sqlite3* are available by default.
+* `embedding_type`: A type of base feature of binary code blocks that will be an input of the first layer of GCN. BoW and DeepBinDiff are available by default.
+* `learning_rate`: A hyperparameter for the Adam optimizer. The default value is 1e-03.
+* `epochs`: The epoch number of training. Note that the batch size is 1 by default.
+* `dropout`: A hyperparameter for the training. 0 by default.
+* `gamma`: A hyperparameter for the margin-based hinge loss.
+* `k`: The number of negative samples per positive pair.
+* `layer`: The number of GCN layers that XBA uses.
+* `ae_dim`: A dimension of output embedding. By default, it is set to 200.
+* `seed`: A proportion of the dataset to be included in the train split. For example, if it is 3 then 30% of the data will be used for training.
+* `log`: Print log if True
+* `record`: Record a history of training in the `history` directory.
+* `restore`: Before training, restore the parameters to continue training.
+* `validate`: Record hit scores after training in the `result` directory.
 
-The following code snippet trains XBA on {target} data with {embedding_type} features. {seed}% seed alignments are used for training and after finishing training model parameters are stored in the `saved_model` directory. When instantiating XBA class, you should put hyperparameters for the training that will be being used for all afterward operations with the class. Having the XBA class instantiated with proper hyperparameters, the first thing you can do is loading data. You can load the data that we've preprocessed with a single line of code. The return values of `data_load()` are as follow:
+The following code snippet trains XBA on {`target`} data with {`embedding_type`} features. {`seed`}% seed alignments are used for training and after finishing training model parameters are stored in the `saved_model` directory. When instantiating XBA class, you should put hyperparameters for the training that will be being used for all afterward operations with the class. Having the XBA class instantiated with proper hyperparameters, the first thing you can do is loading data. You can load the data that we've preprocessed with a single line of code. The return values of `data_load()` are as follow:
 
 * adjacency_matrix_tuple: this is an adjacency matric in COOrdinate format. Each entry is calculated based on fun/ifun that is specified in our paper.
 * embeddings_tuple, embeddings_mat: these are base features of all nodes in the binary graph. It is generated by the method specified with the `embedding_type` parameter.
@@ -218,7 +218,7 @@ $ python ./src/get_rank.py --layer 5 --k 25 --seed 10 --learning_rate 0.001 --ga
 Note that before doing this, the corresponding model should be trained.
 
 ### Baseline
-Run the baseline with {embedding type} feature on {target program name} (*i.e.*, matching only with BB attribute features).
+Run the baseline with {*embedding type*} feature on {*target program name*} (*i.e.*, matching only with BB attribute features).
 ```shellscript
 $ python ./src/baseline.py --target {target program name} --embedding_type {embedding type}
 ```
