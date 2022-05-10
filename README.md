@@ -203,7 +203,7 @@ If `record` is set to True, then after the training, the history of hit scores a
 
 ![training history](history/gcn-3layer-libcrypto-bow-seed50-epoch1000-D200-gamma3.0-k50-dropout0.0-LR0.001.png)
 
-If `validate` is set to True, then after the training the hit scores are calculated using test data and the results are stored in the `result` directory if `record` is set to True. A sample hit score is as follows.
+If `validate` is set to True, the hit scores are calculated using test data after the trainingand. The hit scores will be stored in the `result` directory if `record` is set to True. The sample output of hit scores is as follows.
 ```
 Hits,AB,BA
 1,85.21863641370196,87.63630355766054
@@ -211,7 +211,7 @@ Hits,AB,BA
 50,97.18030620112347,94.34959797334508
 100,97.76957814737305,98.33131402136799
 ```
-The first column means the ranking within that the corresponding block should be. The second and third columns specify bi-directional scores.
+We used *Hits@k* scores as the main measurement for performance. It counts the number of correctly aligned entities ranked in the top *k* candidates. The first column contains *k*. The second and third columns specify the corresponding hits scores in both directions.
 
 ### Indivisual Comparisons
 To calculate the ranking of indivisual block pairs which do not appear in seed alignment, you can use `get_rank.py`. It receives lists of basic blocks and conduct a exhaustive comparison between them. For example,
