@@ -31,7 +31,7 @@ The working directory should be structured as follows.
     ├── data_processing          
     │   ├── build_vocab.py      # Build a vocabulary for generating BoW features.
     │   └── split_seed_alignments.py      # Split the training data and test data so that experiment results are deterministic.
-    ├── data                    # Preprocessed graph representation data for each binary.
+    ├── data/done                    # Preprocessed graph representation data for each binary.
     │   ├── curl                 
     │   │   ├── seed_alignments                # Default directory for split_seed_alignments.py
     │   │   ├── alignment.csv                  # Pair-wise-labeled data
