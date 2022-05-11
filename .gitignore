@@ -6,7 +6,7 @@ data/done/libcrypto*/deepbindiff_embeddings.pt
 __pycache__/
 *.py[cod]
 *$py.class
-/saved_model
+
 
 # C extensions
 *.so
