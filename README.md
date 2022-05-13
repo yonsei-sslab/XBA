@@ -254,4 +254,4 @@ TBA
 
 ## Future works
 * XBA is now implemented with Tensorflow, but it is using deprecated features of Tensorflow v1. A more recent version of deep learning library can be adopted.
-* The data preprocessing is tricky to deploy for now. There will be a more easy way to implement it.
+* The data preprocessing is tricky to be deployed for now. There will be a more easy way to implement it.
