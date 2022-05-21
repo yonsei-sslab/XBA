@@ -1,7 +1,7 @@
 #!/bin/bash
 
 program="curl"
-epochs=400
+epochs=1000
 python ./src/train.py --k 100 --layer 3 --target $program --embedding_type bow --seed 5 --epochs $epochs
 python ./src/train.py --k 100 --layer 3 --target $program --embedding_type deepbindiff --seed 5 --epochs $epochs
 
