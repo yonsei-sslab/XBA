@@ -61,8 +61,11 @@ The working directory should be structured as follows.
     └── saved_model             # Default directory for storing model parameters.  
 
 ### Install
+#### Expected hardware requirements
+We recommend using Nvidia GPU for training and hit score calculations for validation.
+
 #### Prerequisite
-Python 3.8 or above version is required. We recommend using Nvidia GPU for training and hit score calculations for validation. To install python dependencies, you need to install pipenv first.
+Python 3.8 or above version is required. To install python dependencies, you need to install pipenv first.
 ```shellscript
 $ pip3 install pipenv
 ```
@@ -246,12 +249,17 @@ $ make table8
 $ make figure3
 ```
 
+## Troubleshooting
+
+### The TensorFlow library was compiled to use AVX instructions, but these aren't available on your machine.
+This error comes out because your CPU does not support AVX instructions. You need to compile the tensorflow from the source code that does not use the AVX instruction set.
 
 ## Citation
 ```
-TBA
+@inproceedings{kim2022improving,
+  title={Improving Cross-Platform Binary Analysis using Representation Learning via Graph Alignment},
+  author={Kim, Geunwoo and Hong, Sanghyun and Michael, Franz and Song, Dokyung},
+  booktitle={Proceedings of the 31th ACM SIGSOFT International Symposium on Software Testing and Analysis},
+  year={2022}
+}
 ```
-
-## Future works
-* XBA is now implemented with Tensorflow, but it is using deprecated features of Tensorflow v1. A more recent version of deep learning library can be adopted.
-* The data preprocessing is tricky to be deployed for now. There will be a more easy way to implement it.

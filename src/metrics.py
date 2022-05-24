@@ -106,8 +106,9 @@ def get_hits(vec, test_pair, top_k=(1, 10, 50, 100)):
     Rvec_tensor = torch.tensor(Rvec)
     sim = torch.cdist(Lvec_tensor, Rvec_tensor, 1)
 
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     try:
-        sim = sim.to(device="cuda:1")
+        sim = sim.to(device=device)
     except:
         pass
 
