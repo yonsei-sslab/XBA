@@ -1,0 +1,1 @@
+python ./src/test.py --model_name general-model --epochs 200 --layer 3 --ae_dim 200 --target sqlite3 --test_target sqlite3 --embedding_type bow-general  --seed 0

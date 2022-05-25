@@ -1,7 +1,3 @@
-cd saved_model
-rm general*
-cd ..
-
 for test in sqlite3
 do
     # Generate bow embedding for targets data

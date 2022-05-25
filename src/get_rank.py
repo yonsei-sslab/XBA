@@ -63,7 +63,7 @@ xba = XBA(
 
 sess, success = xba.restore()
 
-assert success
+assert success, f"Cannot find a trained model from {xba.get_model_path(' ')[0]}"
 
 xba.exhaustive_comparison(
     sess,

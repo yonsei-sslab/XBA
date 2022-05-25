@@ -1,5 +1,5 @@
 from random import seed
-from utils import get_git_root, loadfile
+from utils import loadfile
 import numpy as np
 import tensorflow as tf
 import os
@@ -15,7 +15,7 @@ flags.DEFINE_string(
 
 seed_ratio_list = [1, 2, 3, 4, 5]
 
-data_root_dir_path = get_git_root() + "/data/done/" + FLAGS.target
+data_root_dir_path = "./data/done/" + FLAGS.target
 reference_alignment_path = data_root_dir_path + "/alignment.csv"
 
 reference_alignment = loadfile(reference_alignment_path, 2)

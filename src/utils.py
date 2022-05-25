@@ -1,7 +1,6 @@
 import logging
 import numpy as np
 import scipy.sparse as sp
-import git
 import json
 import torch
 import csv
@@ -106,14 +105,6 @@ def random_corruption(alignments: np.ndarray, num_of_neg_samples: int) -> tuple:
         right_left = np.hstack((right_left, right_left_candidate))
 
     return left_right, right_left
-
-
-def get_git_root():
-    path = "Pipfile"
-    git_repo = git.Repo(path, search_parent_directories=True)
-    git_root = git_repo.git.rev_parse("--show-toplevel")
-
-    return git_root
 
 
 def sparse_to_tuple(sparse_mx):
@@ -289,7 +280,7 @@ def get_weighted_adj(num_of_entities, relation_set):
 
 
 def load_data(target: str, embe_type: str, seed: int, test_program=None):
-    data_root_dir_path = get_git_root() + "/data/done/" + target
+    data_root_dir_path = "./data/done/" + target
     entity_id_path = data_root_dir_path + "/disasm.json"
     if embe_type == "innereye":
         if target in ["curl", "openssl", "libcrypto", "sqlite3", "httpd"]:
@@ -390,7 +381,7 @@ def load_bow_embeddings(
     vocab = json.load(f)
     num_of_entities = max([int(key) for key in bb_list.keys()]) + 1
 
-    data_root_dir_path = get_git_root() + "/data/done/" + target
+    data_root_dir_path = "./data/done/" + target
     seed_path = data_root_dir_path + "/alignment.csv"
     alignments = pd.read_csv(seed_path, header=None)
     alignments = list(alignments[0]) + list(alignments[1])

@@ -242,6 +242,7 @@ $ python ./src/baseline.py --target {target program name} --embedding_type {embe
 ### Reproduce experiment results in the paper
 For convenience, we wrote scripts for reproducing the experimental results presented in the paper. The below commands will do it for you.
 
+**With training**
 ```shellscript
 $ make table6
 $ make table7
@@ -249,10 +250,21 @@ $ make table8
 $ make figure3
 ```
 
+**Without training**
+```shellscript
+$ make test-table6
+$ make test-table7
+$ make test-table8
+$ make figure3
+```
+
 ## Troubleshooting
 
 ### The TensorFlow library was compiled to use AVX instructions, but these aren't available on your machine.
 This error comes out because your CPU does not support AVX instructions. You need to compile the tensorflow from the source code that does not use the AVX instruction set.
+
+### Assertion fail `assert success, f"Cannot find a trained model from {xba.get_model_path(' ')[0]}"`
+The assertion fails because XBA fails to resotre the model weights. When the function, `sess, success = xba.restore()` is called, XBA restore the trained model weights from `saved_moel` directory. Therefore, the proper model should be already trained and the resultant weights should be stored in `saved_model` directory before running `get_rank.py` and `test.py`.
 
 ## Citation
 ```

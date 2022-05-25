@@ -37,7 +37,7 @@ if FLAGS.embedding_type == "innereye":
 ) = utils.load_data(FLAGS.target, FLAGS.embedding_type, FLAGS.seed)
 
 logging.info(f"Baseline (without GCN) : {FLAGS.target}-{FLAGS.embedding_type}")
-base_dir_path = utils.get_git_root() + "/result/"
+base_dir_path = "./result/"
 file_name = base_dir_path + f"baseline-{FLAGS.target}-{FLAGS.embedding_type}.csv"
 if FLAGS.embedding_type == "innereye":
     result = get_hits(embeddings_mat.toarray(), test_data)
