@@ -95,7 +95,7 @@ Install dependencies
 $ pip install -r requirements.txt
 ```
 
-After activating the python virtual environment, you should be able to run any commands or scripts presented below. Note that XBA uses a few deprecated TF1 APIs that does support the eager execution of TF2. While we are still investigating a good candiate for deep learning library for XBA, the issue will be resolved in the future.
+After activating the python virtual environment, you should be able to run any commands or scripts presented below. Note that XBA uses a few deprecated TF1 APIs that does support the eager execution of TF2. While we are still investigating a good candidate for the deep learning library of XBA, the issue will be resolved in the future.
 
 ### Dataset
 For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely used and satisfy the criteria. Selected software covers a broad range of software disciplines; *SQLite3* (database), *OpenSSL* (network), *cURL* (file transfer), *Httpd* (webserver), *libcrypto* (crypto library), *glibc* (standard library). We used IDA Pro to extract the graph representations of each binary and stored them in the `data` directory.
@@ -108,7 +108,7 @@ $ python split_seed_alignments.py --target {target program name}
 ```
 
 ### Environment variable
-`HIT_SCORE_GPU_ID`: there are two computationally expensive operations in XBA; training and hit score calculation. You can move the hit score calculation to another GPU by specifying an id with `HIT_SCORE_GPU_ID` environment variable. The dafult value is zero if there is GPU; otherwise, CPU is used. 
+`HIT_SCORE_GPU_ID`: there are two computationally expensive operations in XBA; training and hit score calculation. You can move the hit score calculation to another GPU by specifying an id with `HIT_SCORE_GPU_ID` environment variable. The default value is zero if there is GPU; otherwise, the CPU is used. 
  
 ### Test run
 If you succeed to download the repository and set up a proper python environment you should be able to test every functionality that XBA provides. To test basic functionality, run the following command.
@@ -158,7 +158,7 @@ After the training, the model parameters are saved by TensorFlow *Saver* and it 
 ## Detailed Description
 
 ### XBA class
-`xba.py` defines the main class of XBA. It implements the core functionalities of XBA including training, validation, data loading, and building the model. To use XBA, users should first instantiate this class and further functionalities are provided as methods of XBA class. In this way, they can use XBA as it is implemented. If users want to make specific changes in implementations such as modifying tensorflow training code or changing the model architecture, `xba.py` is a good starting point to take a look at.
+`xba.py` defines the main class of XBA. It implements the core functionalities of XBA including training, validation, data loading, and building the model. To use XBA, users should first instantiate this class and further functionalities are provided as methods of XBA class. In this way, they can use XBA as it is implemented. If users want to make specific changes in implementations such as modifying tensorflow training code or changing the model architecture, `xba.py` is a good starting point to take a look.
 
 ### Training
 The main training script is `train.py` and it needs the following parameters.
@@ -210,7 +210,7 @@ If `record` is set to True, then after the training, the history of hit scores a
 
 ![training history](history/gcn-3layer-libcrypto-bow-seed50-epoch1000-D200-gamma3.0-k50-dropout0.0-LR0.001.png)
 
-If `validate` is set to True, the hit scores are calculated using test data after the trainingand. The hit scores will be stored in the `result` directory if `record` is set to True. The sample output of hit scores is as follows.
+If `validate` is set to True, the hit scores are calculated using test data after the training. The hit scores will be stored in the `result` directory if `record` is set to True. The sample output of hit scores is as follows.
 ```
 Hits,AB,BA
 1,85.21863641370196,87.63630355766054
@@ -265,10 +265,10 @@ $ make figure3
 ## Troubleshooting
 
 ### The TensorFlow library was compiled to use AVX instructions, but these aren't available on your machine.
-This error comes out because your CPU does not support AVX instructions. You need to compile the tensorflow from the source code that does not use the AVX instruction set.
+This error comes out because your CPU does not support AVX instructions. You need to compile the TensorFlow from the source code that does not use the AVX instruction set.
 
 ### Assertion fail (`assert success, f"Cannot find a trained model from {xba.get_model_path(' ')[0]}"`)
-The assertion fails because XBA fails to resotre the model weights. When the function, `sess, success = xba.restore()` is called, XBA restore the trained model weights from `saved_moel` directory. Therefore, the proper model should be already trained and the resultant weights should be stored in `saved_model` directory before running `get_rank.py` and `test.py`.
+The assertion fails because XBA fails to restore the model weights. When the function, `sess, success = xba.restore()` is called, XBA restore the trained model weights from `saved_moel` directory. Therefore, the proper model should be already trained and the resultant weights should be stored in `saved_model` directory before running `get_rank.py` and `test.py`.
 
 
 ## Citation
@@ -276,7 +276,7 @@ The assertion fails because XBA fails to resotre the model weights. When the fun
 @inproceedings{kim2022improving,
   title={Improving Cross-Platform Binary Analysis using Representation Learning via Graph Alignment},
   author={Kim, Geunwoo and Hong, Sanghyun and Michael, Franz and Song, Dokyung},
-  booktitle={Proceedings of the 31th ACM SIGSOFT International Symposium on Software Testing and Analysis},
+  booktitle={Proceedings of the 31st ACM SIGSOFT International Symposium on Software Testing and Analysis},
   year={2022}
 }
 ```
