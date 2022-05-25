@@ -18,7 +18,6 @@ import metrics
 
 tf.compat.v1.disable_v2_behavior()
 
-
 class XBA:
     def __init__(
         self,

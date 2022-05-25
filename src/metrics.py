@@ -106,7 +106,13 @@ def get_hits(vec, test_pair, top_k=(1, 10, 50, 100)):
     Rvec_tensor = torch.tensor(Rvec)
     sim = torch.cdist(Lvec_tensor, Rvec_tensor, 1)
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # You can set another GPU for hit score calculation. The Default id is 0
+    import os
+
+    id = os.environ.get("HIT_SCORE_GPU_ID")
+    if id is None:
+        id = 0
+    device = torch.device(f"cuda:{id}" if torch.cuda.is_available() else "cpu")
     try:
         sim = sim.to(device=device)
     except:

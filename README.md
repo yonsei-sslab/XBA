@@ -61,8 +61,9 @@ The working directory should be structured as follows.
     └── saved_model             # Default directory for storing model parameters.  
 
 ### Install
-#### Expected hardware requirements
-We recommend using Nvidia GPU for training and hit score calculations for validation.
+#### Targeted environment
+XBA runs on Linux and at least one Nvidia GPU is required for training and hit score calculations for validation. For NVidia GPU support, you must first install CUDA and CuDNN, if they have not already been installed. We tested XBA on Ubuntu 18.04.5 LTS with a machine equipped with AMD EPYC 7282 CPU with 256GB
+RAM and two NVIDIA RTX 3090 GPUs. Each GPU is used for training and hit score calculations.
 
 #### Prerequisite
 Python 3.8 or above version is required. To install python dependencies, you need to install pipenv first.
@@ -94,7 +95,7 @@ Install dependencies
 $ pip install -r requirements.txt
 ```
 
-After activating the python virtual environment, you should be able to run any commands or scripts presented below.
+After activating the python virtual environment, you should be able to run any commands or scripts presented below. Note that XBA uses a few deprecated TF1 APIs that does support the eager execution of TF2. While we are still investigating a good candiate for deep learning library for XBA, the issue will be resolved in the future.
 
 ### Dataset
 For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely used and satisfy the criteria. Selected software covers a broad range of software disciplines; *SQLite3* (database), *OpenSSL* (network), *cURL* (file transfer), *Httpd* (webserver), *libcrypto* (crypto library), *glibc* (standard library). We used IDA Pro to extract the graph representations of each binary and stored them in the `data` directory.
@@ -105,6 +106,9 @@ After preprocessing the graph data into a proper format you should first split t
 ```shellscript
 $ python split_seed_alignments.py --target {target program name}
 ```
+
+### Environment variable
+`HIT_SCORE_GPU_ID`: there are two computationally expensive operations in XBA; training and hit score calculation. You can move the hit score calculation to another GPU by specifying an id with `HIT_SCORE_GPU_ID` environment variable. The dafult value is zero if there is GPU; otherwise, CPU is used. 
  
 ### Test run
 If you succeed to download the repository and set up a proper python environment you should be able to test every functionality that XBA provides. To test basic functionality, run the following command.
@@ -263,8 +267,9 @@ $ make figure3
 ### The TensorFlow library was compiled to use AVX instructions, but these aren't available on your machine.
 This error comes out because your CPU does not support AVX instructions. You need to compile the tensorflow from the source code that does not use the AVX instruction set.
 
-### Assertion fail `assert success, f"Cannot find a trained model from {xba.get_model_path(' ')[0]}"`
+### Assertion fail (`assert success, f"Cannot find a trained model from {xba.get_model_path(' ')[0]}"`)
 The assertion fails because XBA fails to resotre the model weights. When the function, `sess, success = xba.restore()` is called, XBA restore the trained model weights from `saved_moel` directory. Therefore, the proper model should be already trained and the resultant weights should be stored in `saved_model` directory before running `get_rank.py` and `test.py`.
+
 
 ## Citation
 ```
