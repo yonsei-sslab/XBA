@@ -294,7 +294,7 @@ The assertion fails because XBA fails to restore the model weights. When the fun
 
 ## Citation
 ```
-@inproceedings{kim2022improving,
+@inproceedings{kim2022xba,
   title={Improving Cross-Platform Binary Analysis using Representation Learning via Graph Alignment},
   author={Kim, Geunwoo and Hong, Sanghyun and Michael, Franz and Song, Dokyung},
   booktitle={Proceedings of the 31st ACM SIGSOFT International Symposium on Software Testing and Analysis},
