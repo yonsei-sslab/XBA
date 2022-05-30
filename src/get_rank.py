@@ -2,11 +2,6 @@ import tensorflow as tf
 
 from xba import XBA
 
-# Initialize torch (stupid method!)
-import torch
-
-torch.tensor([1, 2, 3, 4]).to(device="cuda:2")
-
 # Settings
 flags = tf.compat.v1.app.flags
 FLAGS = flags.FLAGS

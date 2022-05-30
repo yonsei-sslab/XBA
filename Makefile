@@ -29,6 +29,8 @@ test-table7:
 
 figure3:
 	./script/figure3.sh
+test-figure3:
+	./script/test-figure3.sh
 
 test:
 	./script/test-run.sh
