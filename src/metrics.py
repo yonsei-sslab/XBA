@@ -98,36 +98,13 @@ def get_rank_idx(i: int, sim: list):
     return torch.count_nonzero(sim < element)
 
 
-def fast_cdist(x1, x2):
-    adjustment = x1.mean(-2, keepdim=True)
-    x1 = x1 - adjustment
-    x2 = (
-        x2 - adjustment
-    )  # x1 and x2 should be identical in all dims except -2 at this point
-
-    # Compute squared distance matrix using quadratic expansion
-    # But be clever and do it with a single matmul call
-    x1_norm = x1.pow(2).sum(dim=-1, keepdim=True)
-    x1_pad = torch.ones_like(x1_norm)
-    x2_norm = x2.pow(2).sum(dim=-1, keepdim=True)
-    x2_pad = torch.ones_like(x2_norm)
-    x1_ = torch.cat([-2.0 * x1, x1_norm, x1_pad], dim=-1)
-    x2_ = torch.cat([x2, x2_pad, x2_norm], dim=-1)
-    res = x1_.matmul(x2_.transpose(-2, -1))
-
-    # Zero out negative values
-    res.clamp_min_(1e-30).sqrt_()
-    return res
-
-
 def get_hits(vec, test_pair, top_k=(1, 10, 50, 100)):
     Lvec = np.array([vec[e1].astype(float) for e1, _ in test_pair])
     Rvec = np.array([vec[e2].astype(float) for _, e2 in test_pair])
 
     Lvec_tensor = torch.tensor(Lvec)
     Rvec_tensor = torch.tensor(Rvec)
-    # sim = torch.cdist(Lvec_tensor, Rvec_tensor, 1)
-    sim = fast_cdist(Lvec_tensor, Rvec_tensor)
+    sim = torch.cdist(Lvec_tensor, Rvec_tensor, 1)
 
     # You can set another GPU for hit score calculation. The Default id is 0
     import os
