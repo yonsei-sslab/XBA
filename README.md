@@ -95,7 +95,7 @@ Install dependencies
 $ pip install -r requirements.txt
 ```
 
-After activating the python virtual environment, you should be able to run any commands or scripts presented below. Note that XBA uses a few deprecated TF1 APIs that does support the eager execution of TF2. While we are still investigating a good candidate for the deep learning library of XBA, the issue will be resolved in the future.
+After activating the python virtual environment, you should be able to run any commands or scripts presented below. Note that XBA uses a few deprecated TF1 APIs that does not support the eager execution of TF2. While we are still investigating a good candidate for the deep learning library of XBA, the issue will be resolved in the future.
 
 ### Dataset
 For XBA to learn useful embeddings, software composing our training dataset must have (i) multi-platform support and (ii) platform-specific code blocks. We chose open-source software from the top Github repositories that are widely used and satisfy the criteria. Selected software covers a broad range of software disciplines; *SQLite3* (database), *OpenSSL* (network), *cURL* (file transfer), *Httpd* (webserver), *libcrypto* (crypto library), *glibc* (standard library). We used IDA Pro to extract the graph representations of each binary and stored them in the `data` directory.
