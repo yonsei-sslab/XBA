@@ -259,7 +259,7 @@ $ make figure3
 $ make test-table6
 $ make test-table7
 $ make test-table8
-$ make figure3
+$ make test-figure3
 ```
 
 ## Apply XBA to other binaries
