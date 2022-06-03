@@ -262,6 +262,8 @@ $ make test-table8
 $ make test-figure3
 ```
 
+Note that the reproduced numbers might be slightly different from the results that appeared in the paper because of the random sampling process for the negative pairs in the margin-based loss. We found that the impact of the quality of negative samples was not negligible and the list of negative samples is generated randomly every time before the training.
+
 ## Apply XBA to other binaries
 As noted above, we do not provide the data generation functionality since it requires the licensed IDA Pro. Specifically, We utilized IDAPython to extract a list of basic blocks and the relational information between the basic blocks. Each instruction in basic blocks should be normalized following the rules specified in the paper. The extracted data should be properly arranged under a directory `./data/{binary_name}`. The required data files are as follows.
 * alignment.csv: this file contains a list of alignment information between a pair of basic blocks that match the same source code line.
