@@ -68,31 +68,31 @@ RAM and two NVIDIA RTX 3090 GPUs. Each GPU is used for training and hit score ca
 #### Prerequisite
 Python 3.8 or above version is required. To install python dependencies, you need to install pipenv first.
 ```shellscript
-$ pip3 install pipenv
+pip3 install pipenv
 ```
 
 #### Use pipenv shell
 
 Install dependencies
 ```shellscript
-$ pipenv install
+pipenv install
 ```
 
 Activate pipenv shell
 ```shellscript
-$ pipenv shell
+pipenv shell
 ```
 
 #### Use your own python virtual environment
 
 Extract requirements.txt
 ```shellscript
-$ pipenv lock -r > requirements.txt
+pipenv lock -r > requirements.txt
 ```
 
 Install dependencies
 ```shellscript
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 After activating the python virtual environment, you should be able to run any commands or scripts presented below. Note that XBA uses a few deprecated TF1 APIs that does not support the eager execution of TF2. While we are still investigating a good candidate for the deep learning library of XBA, the issue will be resolved in the future.
@@ -104,7 +104,7 @@ If users want to run XBA on different binaries, they have to first convert a bin
 
 After preprocessing the graph data into a proper format you should first split the pair-wise-labeled data manually. XBA basically requires users to specify the proportion of the dataset to be included in the train split. To make this split deterministic, users should split the dataset in advance and store the train split and test split separately. The below command will do this for you. You would only need this command if you newly added a dataset. By default, we have split our dataset with a ratio of 10/20/30/40/50%.
 ```shellscript
-$ python split_seed_alignments.py --target {target program name}
+python split_seed_alignments.py --target {target program name}
 ```
 
 ### Environment variable
@@ -113,7 +113,7 @@ $ python split_seed_alignments.py --target {target program name}
 ### Test run
 If you succeed to download the repository and set up a proper python environment you should be able to test every functionality that XBA provides. To test basic functionality, run the following command.
 ```shellscript
-$ make test
+make test
 ```
 This will run the training with BoW and DeepBinDiff base features for each binary in our dataset with 10 epochs and make a validation (approximately it takes around 20 minutes with one RTX 3090). Half of the labeled data is used for training and another half is for validation. After each training finishes, you will see outputs of hit scores as below. Note that the score is not high enough since mostly 10 epochs are not enough to train multi-layer GCN.
 
@@ -224,7 +224,7 @@ We used *Hits@k* scores as the main measurement for performance. It counts the n
 To calculate the ranking of indivisual block pairs which do not appear in seed alignment, you can use `get_rank.py`. It receives lists of basic blocks and conduct a exhaustive comparison between them. For example,
 
 ```shellscript
-$ python ./src/get_rank.py --layer 5 --k 25 --seed 10 --learning_rate 0.001 --gamma 3 --epochs 200 --ae_dim 200 --target libcrypto-xarch --embedding_type bow --bb_id1="93448, 93449" --bb_id2="197104, 197105" # aesni_gcm_initkey
+python ./src/get_rank.py --layer 5 --k 25 --seed 10 --learning_rate 0.001 --gamma 3 --epochs 200 --ae_dim 200 --target libcrypto-xarch --embedding_type bow --bb_id1="93448, 93449" --bb_id2="197104, 197105" # aesni_gcm_initkey
 ```
 
 With this command, you can calculate the ranking of individual blocks that are included in *libcrypto-xarch*. Note that before doing this, the corresponding model should be trained. The output will be like the below.
@@ -239,7 +239,7 @@ BB ID 1,BB ID 2,AB,BA
 ### Baseline
 Run the baseline with {*embedding type*} feature on {*target program name*} (*i.e.*, matching only with BB attribute features).
 ```shellscript
-$ python ./src/baseline.py --target {target program name} --embedding_type {embedding type}
+python ./src/baseline.py --target {target program name} --embedding_type {embedding type}
 ```
 
 
@@ -248,18 +248,18 @@ For convenience, we wrote scripts for reproducing the experimental results prese
 
 **With training**
 ```shellscript
-$ make table6
-$ make table7
-$ make table8
-$ make figure3
+make table6
+make table7
+make table8
+make figure3
 ```
 
 **Without training**
 ```shellscript
-$ make test-table6
-$ make test-table7
-$ make test-table8
-$ make test-figure3
+make test-table6
+make test-table7
+make test-table8
+make test-figure3
 ```
 
 Note that the reproduced numbers might be slightly different from the results that appeared in the paper because of the random sampling process for the negative pairs in the margin-based loss. We found that the impact of the quality of negative samples was not negligible and the list of negative samples is generated randomly every time before the training.
